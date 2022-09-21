@@ -73,12 +73,12 @@ void Error_Handler(void);
 #define QuadKnobA_GPIO_Port GPIOB
 #define QuadKnobB_Pin GPIO_PIN_1
 #define QuadKnobB_GPIO_Port GPIOB
+#define nCS_Pin GPIO_PIN_9
+#define nCS_GPIO_Port GPIOD
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define nCS_Pin GPIO_PIN_9
-#define nCS_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

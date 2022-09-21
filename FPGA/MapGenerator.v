@@ -6,11 +6,14 @@
 // For ECE371
 // Fall 2022
 
-module MapGenerator(row,data,map,reset,switchBuffer);
+module MapGenerator(row,data,map,toggle,switchBuffer,x,y,dataIn);
+
+	input[7:0] x,y,dataIn;
+
 	input switchBuffer;
 
 	// On negative edge switch frame buffers
-	input reset;
+	input toggle;
 	
 	// Which frame buffer to use 
 	input map;
@@ -31,33 +34,42 @@ module MapGenerator(row,data,map,reset,switchBuffer);
 	// The row to display
 	reg[31:0] rowD;
 	
-	wire sbuf = ~reset & switchBuffer;
+	wire sbuf = toggle & switchBuffer;
 	
 	initial begin
 		//Initialize the data for each of the maps
 		//A '1' is a wall and a '0' is empty space
-		frame1[0] = 14'b11100011000111;
-		frame1[1] = 14'b11100011000111;
-		frame1[2] = 14'b11100000000111;
-		frame1[3] = 14'b11100000000111;
-		frame1[4] = 14'b11100000000111;
-		frame1[5] = 14'b11100000000111;
-		frame1[6] = 14'b11100000000111;
-		frame1[7] = 14'b11100000000111;
+		frame1[0] = 14'b11111111111111;
+		frame1[1] = 14'b11111111111111;
+		frame1[2] = 14'b11111111111111;
+		frame1[3] = 14'b11111111111111;
+		frame1[4] = 14'b11111111111111;
+		frame1[5] = 14'b11111111111111;
+		frame1[6] = 14'b11111111111111;
+		frame1[7] = 14'b11111111111111;
 		
-		frame2[0] = 14'b11100000000111;
-		frame2[1] = 14'b11100000000111;
-		frame2[2] = 14'b11100000000111;
-		frame2[3] = 14'b11100000000111;
-		frame2[4] = 14'b11100000000111;
-		frame2[5] = 14'b11100000000111;
-		frame2[6] = 14'b11100011000111;
-		frame2[7] = 14'b11100011000111;
+		frame2[0] = 14'b11111111111111;
+		frame2[1] = 14'b11111111111111;
+		frame2[2] = 14'b11111111111111;
+		frame2[3] = 14'b11111111111111;
+		frame2[4] = 14'b11111111111111;
+		frame2[5] = 14'b11111111111111;
+		frame2[6] = 14'b11111111111111;
+		frame2[7] = 14'b11111111111111;
 	end
 	
 	always@(posedge sbuf)
 	begin
-		mapA <= map;
+		case(mapA)
+		1'b0: begin
+					frame1[y][10 - x] <= dataIn[0];
+				end
+		1'b1: begin
+					frame2[y][10 - x] <= dataIn[0];
+				end
+		endcase
+	
+		mapA <= mapA ^ 1'b1;
 	end
 	
 	always@(*)

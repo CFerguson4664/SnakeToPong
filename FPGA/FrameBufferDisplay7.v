@@ -13,23 +13,25 @@ module FrameBufferDisplay7(
 	VGA_B,							// VGA Blue Value
 	VGA_CLK,							// VGA Output Clock
 	
-	/*HEX0,
+	HEX0,
 	HEX1,
 	HEX2,
 	HEX3,
 	HEX4,
-	HEX5,*/
+	HEX5,
 	LEDR,
 	KEY,
-	SW
+	SW,
+	GPIO
 );			
 
 //Control inputs
 input[3:0] KEY;
 input[9:0] SW;
+input[2:0] GPIO;
 
 //Debug outputs
-/*output[6:0] HEX0,HEX1,HEX2,HEX3,HEX4,HEX5;*/
+output[6:0] HEX0,HEX1,HEX2,HEX3,HEX4,HEX5;
 output[9:0] LEDR;
 
 //Clock input
@@ -87,9 +89,17 @@ assign VGA_B = blue;
 assign VGA_CLK = pixelCLK;
 assign VGA_SYNC_N = 1'b0;
 
+wire ready;
+
 //
 //MapGenerator provides all of the data reguarding the map
-MapGenerator mp(VPixel,mapData,SW[0],KEY[0],switchBuffer);
+MapGenerator mp(VPixel,mapData,SW[0],ready,switchBuffer,x,y,data);
+
+wire[7:0] x,y,data;
+
+SPMod sp(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,GPIO[0],GPIO[1],GPIO[2],x,y,data,ready);
+
+assign LEDR[2:0] = GPIO[2:0];
 
 
 //Main control loop for the system

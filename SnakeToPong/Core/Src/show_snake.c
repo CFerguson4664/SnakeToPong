@@ -7,7 +7,7 @@
 
 #include "snake_enums.h"
 #include "snake_gameplay.h"
-#include "display_DOGS_102.h"
+#include "display_VGA.h"
 
 void incremental_show_snake(const snake_game* s, bool board_updated){
 	static int16_t x = 0;
@@ -29,10 +29,10 @@ void incremental_show_snake(const snake_game* s, bool board_updated){
 		y = 0;
 	}
 	if (b[x][y] == 0){
-		display_white_square(x,y);
+		display_white_square_VGA(x,y);
 	}
 	else {
-		display_dark_square(x,y);
+		display_dark_square_VGA(x,y);
 	}
 
 	// Update the statics so that the next plot is a new cell.

@@ -16,7 +16,7 @@
 #include "snake_repair.h"
 #include "quadknob.h"
 #include "snake_enums.h"
-#include "display_DOGS_102.h"
+#include "display_VGA.h"
 
 #define ERROR_DISPLAY_BAD_HEADING {{1,0},{1,1},{1,2}, {1,4},{1,5},{1,6}}
 #define ERROR_DISPLAY_BLOCK_COUNT 6

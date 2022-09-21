@@ -6,7 +6,7 @@
  */
 
 #include "snake_gameplay.h"
-#include "display_DOGS_102.h"
+#include "display_VGA.h"
 
 
 void snake_game_cleanup(snake_game* s){

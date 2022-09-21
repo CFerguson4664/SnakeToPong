@@ -84,7 +84,7 @@
 #include "main.h"
 #include "snake_main.h"
 #include "snake_gameplay.h"
-#include "display_DOGS_102.h"
+#include "display_VGA.h"
 #include "snake_enums.h"
 #include "quadknob.h"
 #include "smc_queue.h"
@@ -93,7 +93,7 @@
 ///////////////////////////
 // Test -without input, the expected output = snake goes straight ahead every 1/2 second.
 // Without_Input - Works!
-//#define TEST_WITHOUT_INPUT
+#define TEST_WITHOUT_INPUT
 
 // Test - with input: ... (a) Slithering is OK!
 // (b) Turning works - 1 or several detents turn correctly, reliably.
@@ -137,7 +137,7 @@ void snake_main(void){
 	// Output object
 	// Block all interrupts while initializing - initial protocol timing is critical.
 	__disable_irq();
-	display_init();
+//	display_init();
 	__enable_irq();
 
 	// Welcome screen = checkerboard for 2 seconds.
@@ -158,11 +158,11 @@ void snake_main(void){
 		ram_health(ram_dummy_3, MEMORY_BARRIER_3);
 
 	// ASSERT TIMER COUNTDOWN IN RANGE
-		if ((timer_isr_countdown > timer_isr_500ms_restart)||
-				(timer_isr_countdown < 0)){
-			display_checkerboard();
-			while(1);
-		}
+//		if ((timer_isr_countdown > timer_isr_500ms_restart)||
+//				(timer_isr_countdown < 0)){
+//			display_checkerboard();
+//			while(1);
+//		}
 
 #ifndef TEST_WITHOUT_INPUT
 		// Check for user input every 1 ms & paint one block of the display.

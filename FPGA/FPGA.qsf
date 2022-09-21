@@ -263,4 +263,12 @@ set_global_assignment -name FITTER_EFFORT "FAST FIT"
 set_global_assignment -name ADVANCED_PHYSICAL_OPTIMIZATION OFF
 set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
+set_location_assignment PIN_AC18 -to GPIO[0]
+set_location_assignment PIN_Y17 -to GPIO[1]
+set_location_assignment PIN_AD17 -to GPIO[2]
+set_global_assignment -name VERILOG_FILE SPI.v
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to GPIO[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to GPIO[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to GPIO[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to GPIO
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
