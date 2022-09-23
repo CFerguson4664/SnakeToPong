@@ -28,7 +28,7 @@ module FrameBufferDisplay7(
 //Control inputs
 input[3:0] KEY;
 input[9:0] SW;
-input[2:0] GPIO;
+input[4:0] GPIO;
 
 //Debug outputs
 output[6:0] HEX0,HEX1,HEX2,HEX3,HEX4,HEX5;
@@ -51,9 +51,9 @@ reg[8:0] VPixel;
 
 
 //Storage for the VGA display code
-reg[1695:0] currentLine;
-reg[1695:0] nextLine;
-wire[1695:0] mapData;
+reg[5087:0] currentLine;
+reg[5087:0] nextLine;
+wire[5087:0] mapData;
 
 //Wires for the clock signals.
 wire pixelCLK,logicCLK;
@@ -90,14 +90,15 @@ assign VGA_CLK = pixelCLK;
 assign VGA_SYNC_N = 1'b0;
 
 wire ready;
+reg colors[5:0];
 
 //
 //MapGenerator provides all of the data reguarding the map
-MapGenerator mp(VPixel,mapData,SW[0],ready,switchBuffer,x,y,data);
+MapGenerator mp(VPixel,mapData,ready,x,y,spiData,GPIO[4:3]);
 
-wire[7:0] x,y,data;
+wire[7:0] x,y,spiData;
 
-SPMod sp(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,GPIO[0],GPIO[1],GPIO[2],x,y,data,ready);
+SPMod sp(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,GPIO[0],GPIO[1],GPIO[2],x,y,spiData,ready);
 
 assign LEDR[2:0] = GPIO[2:0];
 
@@ -118,7 +119,6 @@ begin
 		//Reset the control counters
 		HPixel <= 0;
 		currentLine <= mapData;
-		switchBuffer <= 1;
 		
 		//If we are starting a new frame
 		if(VCount == 0)
@@ -129,33 +129,13 @@ begin
 		begin
 			VPixel <= VPixel + 9'd1;
 		end 
-	end else begin
-		switchBuffer <= 0;
 	end
 	
 	//Convert the data from MapGenerator into actual colors
-	case(currentLine[(HPixel * 2)+:2])
-	0	:	begin
-				red = 0;
-				green = 0;
-				blue = 0;
-			end
-	1	:	begin
-				red = 255;
-				green = 0;
-				blue = 0;
-			end
-	2	:	begin
-				red = 0;
-				green = 255;
-				blue = 0;
-			end
-	3	:	begin
-				red = 0;
-				green = 0;
-				blue = 255;
-			end
-	endcase
+	//colors <= currentLine[(HPixel * 6)+:6];
+	red <= {{1{currentLine[(HPixel * 6) + 5]}},{7{currentLine[(HPixel * 6) + 4]}}};
+	green <= {{1{currentLine[(HPixel * 6) + 3]}},{7{currentLine[(HPixel * 6) + 2]}}};
+	blue <= {{1{currentLine[(HPixel * 6) + 1]}},{7{currentLine[(HPixel * 6)]}}};
 end
 
 endmodule
