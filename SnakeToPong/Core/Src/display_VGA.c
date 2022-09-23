@@ -187,8 +187,8 @@ static void display_paint_square_VGA(uint8_t l_to_r, uint8_t t_to_b, uint8_t pkt
 	}
 	else {
 		spi_start_msg_VGA();
-		spi_msg_out_VGA(t_to_b);
 		spi_msg_out_VGA(l_to_r);
+		spi_msg_out_VGA(t_to_b);
 		spi_msg_out_VGA(pkt);
 //		DOGS_packet page_set = {0, 0xb0|t_to_b};
 //		spi_msg_out(page_set);

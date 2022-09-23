@@ -69,7 +69,7 @@ module MapGenerator(row,data,map,toggle,switchBuffer,x,y,dataIn);
 				end
 		endcase
 	
-		mapA <= mapA ^ 1'b1;
+		//mapA <= mapA ^ 1'b1;
 	end
 	
 	always@(*)

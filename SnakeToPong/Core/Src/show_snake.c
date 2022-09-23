@@ -45,3 +45,33 @@ void incremental_show_snake(const snake_game* s, bool board_updated){
 		}
 	}
 }
+
+void incremental_test_screen() {
+	const uint16_t lim = 50;
+	static uint8_t x = 0;
+	static uint8_t y = 0;
+	static uint16_t n = 0;
+	static uint8_t color = 0;
+
+	n++;
+	if(n >= lim){
+		n = 0;
+		if(color == 0) {
+			display_dark_square_VGA(x,y);
+		}
+		else {
+			display_white_square_VGA(x,y);
+		}
+
+		x++;
+		if (x >= CHECKS_WIDE){
+			x = 0;
+			y++;
+			if (y >= CHECKS_WIDE){
+				y = 0;
+				color = color ^ 0x01;
+			}
+		}
+	}
+
+}

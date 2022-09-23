@@ -203,7 +203,8 @@ void snake_main(void){
 		// Normally "check for user input every 1 ms & show" - here just update display
 		if (prior_timer_countdown != timer_isr_countdown ){
 			prior_timer_countdown = timer_isr_countdown;
-			incremental_show_snake(&my_game, false);
+//			incremental_show_snake(&my_game, false);
+			incremental_test_screen();
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
@@ -219,7 +220,8 @@ void snake_main(void){
 				snake_heading_update(&my_game, &turn_q);
 				snake_periodic_play(&my_game);
 			}
-			incremental_show_snake(&my_game, true);
+//			incremental_show_snake(&my_game, true);
+			incremental_test_screen();
 		}
 #endif
 	}
