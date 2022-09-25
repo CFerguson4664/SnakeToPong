@@ -137,16 +137,16 @@ void snake_main(void){
 	// Output object
 	// Block all interrupts while initializing - initial protocol timing is critical.
 	__disable_irq();
-//	display_init();
+	init_display_VGA(ONEX);
 	__enable_irq();
 
 	// Welcome screen = checkerboard for 2 seconds.
 	timer_isr_countdown = timer_isr_2000ms_restart;
-	display_checkerboard();
+	display_checkerboard_VGA();
 	while (timer_isr_countdown > 0){}
 	timer_isr_countdown = timer_isr_500ms_restart;
 	// Confirm all the rules and paint the initial snake.
-	display_blank();
+	display_color_VGA(0x0F);
 	//snake_game_cleanup(&my_game);
 
 	// OPERATE THE GAME
@@ -157,12 +157,12 @@ void snake_main(void){
 		ram_health(ram_dummy_2, MEMORY_BARRIER_2);
 		ram_health(ram_dummy_3, MEMORY_BARRIER_3);
 
-	// ASSERT TIMER COUNTDOWN IN RANGE
-//		if ((timer_isr_countdown > timer_isr_500ms_restart)||
-//				(timer_isr_countdown < 0)){
-//			display_checkerboard();
-//			while(1);
-//		}
+		// ASSERT TIMER COUNTDOWN IN RANGE
+		if ((timer_isr_countdown > timer_isr_500ms_restart)||
+				(timer_isr_countdown < 0)){
+			display_checkerboard_VGA();
+			while(1);
+		}
 
 #ifndef TEST_WITHOUT_INPUT
 		// Check for user input every 1 ms & paint one block of the display.
@@ -203,8 +203,8 @@ void snake_main(void){
 		// Normally "check for user input every 1 ms & show" - here just update display
 		if (prior_timer_countdown != timer_isr_countdown ){
 			prior_timer_countdown = timer_isr_countdown;
-//			incremental_show_snake(&my_game, false);
-			incremental_test_screen();
+			incremental_show_snake(&my_game, false);
+//			incremental_test_screen();
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
@@ -220,8 +220,8 @@ void snake_main(void){
 				snake_heading_update(&my_game, &turn_q);
 				snake_periodic_play(&my_game);
 			}
-//			incremental_show_snake(&my_game, true);
-			incremental_test_screen();
+			incremental_show_snake(&my_game, true);
+//			incremental_test_screen();
 		}
 #endif
 	}

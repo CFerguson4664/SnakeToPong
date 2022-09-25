@@ -58,7 +58,7 @@ bool snake_plot(const snake_game *s, int8_t b[CHECKS_WIDE][CHECKS_WIDE]){
 			case SNAKE_COMPASS_W: x--; break;
 			default:
 				for (int bc = 0; bc < ERROR_DISPLAY_BLOCK_COUNT; bc++){
-				    display_dark_square(error_bar[bc].x, error_bar[bc].y);
+//				    display_dark_square(error_bar[bc].x, error_bar[bc].y);
 				}
 		}
 		x = (x >= 0)?(x % CHECKS_WIDE):(CHECKS_WIDE-1);
@@ -177,7 +177,7 @@ void snake_place_fruit(snake_game *s, const int8_t board[CHECKS_WIDE][CHECKS_WID
 			} // end for-c
 		} // end for-r
 	} // end if back-up plan
-	display_dark_square(s->fruit.x,s->fruit.y);
+//	display_dark_square(s->fruit.x,s->fruit.y);
 
 	return;
 }
@@ -223,7 +223,7 @@ void snake_periodic_play(snake_game* s){
 	bool ok;
 	ok = snake_plot(s, board) && fruit_plot(s, board); // Will happen l-to-r.
 	if (!ok) {
-		display_checkerboard();
+//		display_checkerboard();
 		for (volatile int32_t n = 0 ; n< BIG_DELAY_COUNT; n++);
 		snake_game_init(s);
 		snake_plot(s, board);

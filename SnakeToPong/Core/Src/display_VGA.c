@@ -35,6 +35,7 @@
 // created with STM32CubeMX.
 #include "main.h"
 #include "display_VGA.h"
+#include "snake_enums.h"
 #include "snake_gameplay.h" // To learn "CHECKS_WIDE"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -46,166 +47,147 @@ extern  SPI_HandleTypeDef hspi2; //TUTORIAL ...
 // for me by STM32CubeMX in MAIN.C. I have to, or the the calls
 // to HAL_SPI_Transmit(&hspi2 ...) won't build.
 
+uint8_t xCap = 0;
+uint8_t yCap = 0;
+static enum VGA_Scale currentScale = UNKNOWN;
 
 
+void init_display_VGA(enum VGA_Scale scale) {
+	const uint8_t numBlanks = 5;
+
+	set_VGA_scale(scale);
+
+	for(uint8_t i = 0; i < numBlanks; i++) {
+		display_blank_VGA();
+	}
+}
+
+void set_VGA_scale(enum VGA_Scale scale) {
+	switch(scale) {
+		case ONEX : {
+			currentScale = ONEX;
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+			xCap = DISPLAY_WIDTH;   // xCap = 56
+			yCap = DISPLAY_HEIGHT;	// yCap = 32
+			break;
+		}
+		case TWOX : {
+			currentScale = TWOX;
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+			xCap = DISPLAY_WIDTH / 2;   // xCap = 28
+			yCap = DISPLAY_HEIGHT / 2;  // yCap = 16
+			break;
+		}
+		case FOURX : {
+			currentScale = FOURX;
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+			xCap = DISPLAY_WIDTH / 4;   // xCap = 14
+			yCap = DISPLAY_HEIGHT / 4;  // yCap = 8
+			break;
+		}
+		default: {
+			currentScale = UNKNOWN;
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+			xCap = 0;   // xCap = 56
+			yCap = 0;	// yCap = 32
+			break;
+		}
+	}
+}
 
 static void spi_msg_out_VGA(uint8_t pkt){
 	const uint32_t SPI_timeout = 100;
 
 	// Send one packet (a byte).
 	// Use the HAL.
-	// SPI1: Send 1 byte of pkt.byte, and timeout only after 100 ticks
+	// SPI1: Send pkt (1 byte), and timeout only after 100 ticks
 	// EXPECT ABOUT 16 us of delay from PD_6 low to SCK action.
 	HAL_SPI_Transmit(&hspi2, &pkt, 1, SPI_timeout);
 }
 
-static void spi_start_msg_VGA() {
-	const int16_t twelve_us = 10000;
-
-	// Pulse the CS line high to mark change-of-packet
-		// GPIOD->ODR |= GPIO_ODR_OD9;
-		//  -- or, in HAL notation -- //
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);  // * GPIO_PIN_9 == 1<<9
-		for (int32_t i = 0; i<twelve_us; i++)
-		   {;}                   // just counting to waste time for about 12 us
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);
+static void spi_SS_Low() {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);
 }
 
-const DOGS_packet init_stream_VGA[] =
-{   {0, 0x40},  // Display processor boot! Startline = 0
-    {0, 0xa1},  // "SEG-reversed" for view-from-bottom
-	{0, 0xc0},  // COM-normal for view=from-bottom
-	{0, 0xa4},  // Pixels show RAM
-	{0, 0xa6},  // Foreground dark, background clear
-	{0, 0xa2},  // Set "bias" to 1/9 = typical LCD tech
-	{0, 0x2f},  // Power booster ON
-	{0, 0x27},  // Internal Resistor Ratio
-	{0, 0x81},  // Set volume = contrast
-	{0, 0x02},
-	{0, 0xaf}  // Display Active!
-}; // Send another "!" shape
-
-void display_init_VGA(void){
-//
-//	const uint32_t five_ms = 40000;
-//	const int init_stream_length = sizeof(init_stream)/ sizeof(init_stream[0]);
-//	// - LET CUBEMX CONFIGURE REGISTERS // config_periph();
-//	// Hardware reset first:
-//	HAL_GPIO_WritePin(DOGS_reset_GPIO_Port, DOGS_reset_Pin, GPIO_PIN_RESET);
-//	// Or use the bit-banging method to do the same thing:
-//	GPIOA->ODR &=~ GPIO_ODR_OD0; // nReset Low
-//
-//	GPIOA->ODR |= GPIO_ODR_OD1;  // nCS high -
-//
-//	for (uint32_t i = 0; i < five_ms; i++){;} // pause 5 ms
-//
-//	GPIOA->ODR |= GPIO_ODR_OD0; // nReset High
-//
-//	for (uint32_t i = 0; i < five_ms; i++){;} // pause 5 ms
-//
-//	GPIOA->ODR &= ~GPIO_ODR_OD1;  // nCS low
-//	for (uint32_t i = 0; i < five_ms; i++){;} // pause 5 ms
-//
-//	// Initialize the DOGS with a 11-command stream, then send a simple image to plot
-//	for (uint16_t init_index = 0; init_index < init_stream_length; init_index++){
-//        spi_msg_out(init_stream[init_index]);
-//    }
+static void spi_SS_High() {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);  // * GPIO_PIN_9 == 1<<9
 }
 
 
+void display_blank_VGA(){
+	const uint8_t black = 0x00;
 
-void display_blank_VGA(void){
-//	const int display_width = DISPLAY_WIDTH;
-//	const DOGS_packet white = {1, 0x00};
-//	for (uint16_t pg = 0; pg < CHECKS_WIDE; pg++){
-//		DOGS_packet page_set = {0, 0xb0|pg};
-//		for (uint16_t col = 0; col < display_width; col++){
-//			spi_msg_out(page_set);
-//			DOGS_packet col_set[2] = {{0, (col &0x0f)}, {0, 0x10|(col>>4)}};
-//			spi_msg_out(col_set[0]);
-//			spi_msg_out(col_set[1]);
-//			spi_msg_out(white);
-//		}
-//	}
+	for(uint8_t x = 0; x < xCap; x++) {
+		for(uint8_t y = 0; y < yCap; y++) {
+			display_square_VGA(x,y,black);
+		}
+	}
+}
+
+void display_color_VGA(uint8_t color){
+	for(uint8_t x = 0; x < xCap; x++) {
+		for(uint8_t y = 0; y < yCap; y++) {
+			display_square_VGA(x,y,color);
+		}
+	}
 }
 
 
 void display_checkerboard_VGA(void){
-//	const int checkerboard_squares = CHECKS_WIDE;
-//	const int checkerboard_pixels_wide = PIXELS_PER_CHECK * CHECKS_WIDE;
-//	const int display_width = DISPLAY_WIDTH;
-//	const DOGS_packet black = {1, 0xFF};
-//	const DOGS_packet white = {1, 0x00};
-//	for (uint16_t pg = 0; pg < checkerboard_squares; pg++){
-//		DOGS_packet page_set = {0, 0xb0|pg};
-//		for (uint16_t col = 0; col < display_width; col++){
-//			spi_msg_out(page_set);
-//
-//			DOGS_packet col_set[2] = {{0, (col &0x0f)}, {0, 0x10|(col>>4)}};
-//			spi_msg_out(col_set[0]);
-//			spi_msg_out(col_set[1]);
-//			if ((col < checkerboard_pixels_wide) &
-//					!((pg+col/PIXELS_PER_CHECK) & 0x01))
-//			{ // BIT-BANGING for evenness is QUICK
-//				spi_msg_out(black);
-//			}else{
-//				spi_msg_out(white);
-//			}
-//		}
-//	}
+	const uint8_t black = 0x00;
+	const uint8_t white = 0x3F;
+
+	for(uint8_t x = 0; x < xCap; x++) {
+		for(uint8_t y = 0; y < yCap; y++) {
+			uint8_t isBlack = (x & 0x01) ^ (y & 0x01);
+			if(isBlack == 0) {
+				display_square_VGA(x, y, black);
+			}
+			else {
+				display_square_VGA(x, y, white);
+			}
+		}
+	}
 }
 
 
 void display_snake_board_VGA(int8_t board[CHECKS_WIDE][CHECKS_WIDE]){
-//	const int checkerboard_squares = CHECKS_WIDE;
-//	const int checkerboard_pixels_wide = PIXELS_PER_CHECK * CHECKS_WIDE;
-//	const int display_width = DISPLAY_WIDTH;
-//	const DOGS_packet black = {1, 0xFF};
-//	const DOGS_packet white = {1, 0x00};
-//	for (uint16_t pg = 0; pg < checkerboard_squares; pg++){
-//		DOGS_packet page_set = {0, 0xb0|pg};
-//		spi_msg_out(page_set);
-//		for (uint16_t col = 0; col < display_width; col++){
-//			DOGS_packet col_set[2] = {{0, (col &0x0f)}, {0, 0x10|(col>>4)}};
-//			spi_msg_out(col_set[0]);
-//			spi_msg_out(col_set[1]);
-//			if ((col < checkerboard_pixels_wide) &
-//					(board[col/PIXELS_PER_CHECK][pg] != 0))
-//			{
-//				spi_msg_out(black);
-//			}else{
-//				spi_msg_out(white);
-//			}
-//		}
-//	}
-}
+	const int checkerboard_squares = CHECKS_WIDE;
+	const int green = 0x0C;
+	const int black = 0x0C;
 
+	uint8_t xOffset = (xCap - checkerboard_squares) / 2;
+	uint8_t yOffset = (yCap - checkerboard_squares) / 2;
 
-static void display_paint_square_VGA(uint8_t l_to_r, uint8_t t_to_b, uint8_t pkt){
-	if ((l_to_r > (DISPLAY_WIDTH/PIXELS_PER_CHECK))||(t_to_b > CHECKS_WIDE)) {
-		display_checkerboard_VGA();
-	}
-	else {
-		spi_start_msg_VGA();
-		spi_msg_out_VGA(l_to_r);
-		spi_msg_out_VGA(t_to_b);
-		spi_msg_out_VGA(pkt);
-//		DOGS_packet page_set = {0, 0xb0|t_to_b};
-//		spi_msg_out(page_set);
-//		for (uint16_t n = 0; n < PIXELS_PER_CHECK; n++){
-//			uint8_t col = l_to_r * PIXELS_PER_CHECK + n;
-//			DOGS_packet col_set[2] = {{0, (col &0x0f)}, {0, 0x10|(col>>4)}};
-//			spi_msg_out(col_set[0]);
-//			spi_msg_out(col_set[1]);
-//			spi_msg_out(p);
-//		}
+	for(int8_t x = 0; x < checkerboard_squares; x++) {
+		for(int8_t y = 0; y < checkerboard_squares; y++) {
+			if(board[x][y] != 0) {
+				display_square_VGA((x + xOffset), (y + yOffset), green);
+			}
+			else {
+				display_square_VGA((x + xOffset), (y + yOffset), black);
+			}
+		}
 	}
 }
+
 
 void display_white_square_VGA(uint8_t l_to_r, uint8_t t_to_b){
-	display_paint_square_VGA(l_to_r, t_to_b, 0xFF);
+	display_square_VGA(l_to_r, t_to_b, 0xFF);
 }
 
 void display_dark_square_VGA(uint8_t l_to_r, uint8_t t_to_b){
-	display_paint_square_VGA(l_to_r, t_to_b, 0x00);
+	display_square_VGA(l_to_r, t_to_b, 0x00);
+}
+
+void display_square_VGA(uint8_t l_to_r, uint8_t t_to_b, uint8_t color){
+	spi_SS_Low();
+	spi_msg_out_VGA(l_to_r);
+	spi_msg_out_VGA(t_to_b);
+	spi_msg_out_VGA(color);
+	spi_SS_High();
 }

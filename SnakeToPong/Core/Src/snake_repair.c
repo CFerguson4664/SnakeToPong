@@ -10,7 +10,7 @@
 
 
 void snake_game_cleanup(snake_game* s){
-	display_init();
+//	display_init();
 
 	// Illegal heading? Then go straight ahead.
 	switch(s->heading){
@@ -35,7 +35,7 @@ void snake_game_cleanup(snake_game* s){
 	}
 	// Plot & display the head
 	board[x][y] = 1;
-	display_dark_square(x,y);
+	display_dark_square_VGA(x,y);
 
 	// Plot & show the body - but no the poop after the tail.
 	// We are looking for a possible self-crossing of a snake in 2-D.
@@ -60,7 +60,7 @@ void snake_game_cleanup(snake_game* s){
 			// Mark the board with a non-zero value
 			board[x][y] = n+1;
 		}
-		display_dark_square(x,y);
+		display_dark_square_VGA(x,y);
 	}
 
 	// Ensure fruit placement

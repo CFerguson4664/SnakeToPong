@@ -133,9 +133,9 @@ begin
 	
 	//Convert the data from MapGenerator into actual colors
 	//colors <= currentLine[(HPixel * 6)+:6];
-	red <= {{1{currentLine[(HPixel * 6) + 5]}},{7{currentLine[(HPixel * 6) + 4]}}};
-	green <= {{1{currentLine[(HPixel * 6) + 3]}},{7{currentLine[(HPixel * 6) + 2]}}};
-	blue <= {{1{currentLine[(HPixel * 6) + 1]}},{7{currentLine[(HPixel * 6)]}}};
+	red <= {{1{currentLine[(HPixel * 6) + 5]}}, {1{currentLine[(HPixel * 6) + 4]}}, {6{currentLine[(HPixel * 6) + 5] & currentLine[(HPixel * 6) + 4]}}};
+	green <= {{1{currentLine[(HPixel * 6) + 3]}}, {1{currentLine[(HPixel * 6) + 2]}}, {6{currentLine[(HPixel * 6) + 3] & currentLine[(HPixel * 6) + 2]}}};
+	blue <= {{1{currentLine[(HPixel * 6) + 1]}}, {1{currentLine[(HPixel * 6)]}}, {6{currentLine[(HPixel * 6) + 1] & currentLine[(HPixel * 6)]}}};
 end
 
 endmodule
