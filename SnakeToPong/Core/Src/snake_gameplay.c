@@ -12,8 +12,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <VGA_repair.h>
 #include "snake_gameplay.h"
-#include "snake_repair.h"
 #include "quadknob.h"
 #include "snake_enums.h"
 #include "display_VGA.h"

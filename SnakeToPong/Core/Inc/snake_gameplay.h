@@ -10,10 +10,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <VGA_main.h> // Get checks and display width
 #include "quadknob.h"
 #include "snake_enums.h"
 #include "smc_queue.h"
-#include "snake_main.h" // Get checks and display width
 
 typedef struct {int16_t x; int16_t y;} XY_PT;
 

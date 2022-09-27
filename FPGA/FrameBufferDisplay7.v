@@ -94,11 +94,11 @@ reg colors[5:0];
 
 //
 //MapGenerator provides all of the data reguarding the map
-MapGenerator mp(VPixel,mapData,ready,x,y,spiData,GPIO[4:3]);
+MapGenerator mp(VPixel,mapData,ready,spiData,GPIO[4:3]);
 
-wire[7:0] x,y,spiData;
+wire[23:0] spiData;
 
-SPMod sp(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,GPIO[0],GPIO[1],GPIO[2],x,y,spiData,ready);
+SPMod sp(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,GPIO[0],GPIO[1],GPIO[2],spiData,ready);
 
 assign LEDR[2:0] = GPIO[2:0];
 

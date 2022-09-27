@@ -1,11 +1,12 @@
-module SPMod(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,SPI_CLK,SPI_CS,SPI_DATA,x,y,data,ready);
+module SPMod(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,SPI_CLK,SPI_CS,SPI_DATA,command,ready);
 	output[6:0] HEX0,HEX1,HEX2,HEX3,HEX4,HEX5;
 	input SPI_CLK,SPI_CS,SPI_DATA;
 	
-	output reg[7:0] x,y,data;
 	output ready;
 	
-	reg[23:0] command = 0;
+	reg[7:0] x,y,data;
+	
+	output reg[23:0] command = 0;
 	
 	SSHEX h5(x[7:4],HEX5);
 	SSHEX h4(x[3:0],HEX4);
@@ -16,7 +17,7 @@ module SPMod(HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,SPI_CLK,SPI_CS,SPI_DATA,x,y,data,read
 	SSHEX h1(data[7:4],HEX1);
 	SSHEX h0(data[3:0],HEX0);
 	
-	assign ready = ~SPI_CS;
+	assign ready = SPI_CS;
 	
 	always@(negedge SPI_CLK)
 	begin

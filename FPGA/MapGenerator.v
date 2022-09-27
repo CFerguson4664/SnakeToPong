@@ -6,10 +6,9 @@
 // For ECE371
 // Fall 2022
 
-module MapGenerator(row,data,toggle,x,y,dataIn,mult);
+module MapGenerator(row,data,toggle,command,mult);
 	input[1:0] mult;
-	input[7:0] x,y;
-	input[5:0] dataIn;
+	input[23:0] command;
 
 	// On positive edge apply data
 	input toggle;
@@ -26,17 +25,29 @@ module MapGenerator(row,data,toggle,x,y,dataIn,mult);
 	// The row to display
 	reg[31:0] rowD;
 	
+	wire SRout;
+	wire[7:0] x,y;
+	wire[5:0] inData;
+	
+	assign x = command[23:16];
+	assign y = command[15:8];
+	assign inData = command[5:0];
+	
+	//assign rs = SRout & clk50;
+	
+	//SRLatch SRLch(toggle, rs, SRout);
+	
 	always@(posedge toggle)
 	begin
 		case(mult)
 		2'd0: begin
-					frame1[y][(x * 6)+:6] <= dataIn[5:0];
+					frame1[y][(x * 6)+:6] <= inData;
 				end
 		2'd1: begin
-					frame1[y][(x * 12)+:12] <= {2{dataIn[5:0]}};
+					frame1[y][(x * 12)+:12] <= {2{inData}};
 				end
 		2'd3: begin
-					frame1[y][(x * 24)+:24] <= {4{dataIn[5:0]}};
+					frame1[y][(x * 24)+:24] <= {4{inData}};
 				end
 		endcase
 	end

@@ -22,8 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
+#include <VGA_main.h>
 #include "smc_queue.h"
-#include "snake_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,7 +105,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start_IT(&htim17);  // SMC - Start the timer
-  snake_main();
+  VGA_main();
 
   /* USER CODE END 2 */
 

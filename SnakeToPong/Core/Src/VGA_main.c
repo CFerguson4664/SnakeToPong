@@ -3,6 +3,10 @@
 // Copyright 2022 Sean Carroll
 // 2022.7.26
 //
+// Modified by CFerguson
+// 2022.9.27
+
+
 // SURPRISE - I had to add "#include <stddef.h>' into file sysmem.c to define
 // symbol NULL. An oversight by STM? Nice that it seems to be allowed --
 // CLEAN and autobuild did not overwrite my improvement.
@@ -81,8 +85,8 @@
 #include <stdlib.h> // rand
 #include <stdbool.h>
 #include <cmsis_gcc.h>
+#include <VGA_main.h>
 #include "main.h"
-#include "snake_main.h"
 #include "snake_gameplay.h"
 #include "display_VGA.h"
 #include "snake_enums.h"
@@ -106,7 +110,7 @@
 extern volatile int32_t timer_isr_countdown; // Required to control timing
 const int snake_board_size = CHECKS_WIDE; // Provided for extern
 
-void ram_health(uint16_t dummy_var, uint16_t pattern){
+void VGA_ram_health(uint16_t dummy_var, uint16_t pattern){
 	// DEBUGGING PHASE: LOCK UP THE PROGRAM if RAM is corrupted.
 	if (dummy_var != pattern){
 		while(1);
@@ -114,7 +118,7 @@ void ram_health(uint16_t dummy_var, uint16_t pattern){
 }
 
 
-void snake_main(void){
+void VGA_main(void){
 	const int32_t timer_isr_500ms_restart = 500;
 	const int32_t timer_isr_2000ms_restart = 2000;
 
@@ -153,9 +157,9 @@ void snake_main(void){
 	int32_t prior_timer_countdown = timer_isr_countdown;
 
 	while(1){
-		ram_health(ram_dummy_1, MEMORY_BARRIER_1);
-		ram_health(ram_dummy_2, MEMORY_BARRIER_2);
-		ram_health(ram_dummy_3, MEMORY_BARRIER_3);
+		VGA_ram_health(ram_dummy_1, MEMORY_BARRIER_1);
+		VGA_ram_health(ram_dummy_2, MEMORY_BARRIER_2);
+		VGA_ram_health(ram_dummy_3, MEMORY_BARRIER_3);
 
 		// ASSERT TIMER COUNTDOWN IN RANGE
 		if ((timer_isr_countdown > timer_isr_500ms_restart)||

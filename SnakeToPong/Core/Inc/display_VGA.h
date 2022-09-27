@@ -9,6 +9,7 @@
 #define INC_DISPLAY_VGA
 
 #include "snake_enums.h"
+#include "VGA_enums.h"
 
 #define CHECKS_WIDE (((uint16_t)8))
 #define DISPLAY_WIDTH (((uint16_t)56))
