@@ -18,13 +18,15 @@
 typedef struct {int16_t x; int16_t y;} XY_PT;
 
 typedef struct {
-	enum snake_compass_dir vertebra[CHECKS_WIDE * CHECKS_WIDE];
-	XY_PT head;
-	XY_PT fruit;
-	uint8_t Rlength;
-	uint8_t Llength;
-	enum snake_compass_dir heading[];
-} snake_game;
+	//Ball stuff
+	XY_PT ball;
+	XY_PT balldir;
+
+	//Paddle stuff
+	XY_PT Lpad;
+	XY_PT Rpad;
+
+} pong_game;
 
 enum snake_compass_dir snake_opposite_direction(enum snake_compass_dir d);
 void snake_game_init(snake_game* s);
