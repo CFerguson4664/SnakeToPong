@@ -6,11 +6,11 @@
  */
 
 #include "snake_gameplay.h"
-#include "display_VGA.h"
+#include "display_DOGS_102.h"
 
 
-void VGA_game_cleanup(snake_game* s){
-//	display_init();
+void snake_game_cleanup(snake_game* s){
+	display_init();
 
 	// Illegal heading? Then go straight ahead.
 	switch(s->heading){
@@ -35,7 +35,7 @@ void VGA_game_cleanup(snake_game* s){
 	}
 	// Plot & display the head
 	board[x][y] = 1;
-	//display_dark_square_VGA(x,y);
+	display_dark_square(x,y);
 
 	// Plot & show the body - but no the poop after the tail.
 	// We are looking for a possible self-crossing of a snake in 2-D.
@@ -60,12 +60,12 @@ void VGA_game_cleanup(snake_game* s){
 			// Mark the board with a non-zero value
 			board[x][y] = n+1;
 		}
-		//display_dark_square_VGA(x,y);
+		display_dark_square(x,y);
 	}
 
 	// Ensure fruit placement
 	if (board[s->fruit.x][s->fruit.y] != 0){
 		snake_place_fruit(s, (const int8_t(*)[CHECKS_WIDE])board);
 	}
-	//display_dark_square_VGA(s->fruit.x, s->fruit.y);
+	display_dark_square(s->fruit.x, s->fruit.y);
 }

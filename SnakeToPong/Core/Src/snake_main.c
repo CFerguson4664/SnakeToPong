@@ -3,10 +3,6 @@
 // Copyright 2022 Sean Carroll
 // 2022.7.26
 //
-// Modified by CFerguson
-// 2022.9.27
-
-
 // SURPRISE - I had to add "#include <stddef.h>' into file sysmem.c to define
 // symbol NULL. An oversight by STM? Nice that it seems to be allowed --
 // CLEAN and autobuild did not overwrite my improvement.
@@ -85,20 +81,19 @@
 #include <stdlib.h> // rand
 #include <stdbool.h>
 #include <cmsis_gcc.h>
-#include <VGA_main.h>
 #include "main.h"
+#include "snake_main.h"
 #include "snake_gameplay.h"
-#include "display_VGA.h"
+#include "display_DOGS_102.h"
 #include "snake_enums.h"
-#include "VGA_enums.h"
 #include "quadknob.h"
 #include "smc_queue.h"
-#include "show_pong.h"
+#include "show_snake.h"
 
 ///////////////////////////
 // Test -without input, the expected output = snake goes straight ahead every 1/2 second.
 // Without_Input - Works!
-#define TEST_WITHOUT_INPUT_VGA
+//#define TEST_WITHOUT_INPUT
 
 // Test - with input: ... (a) Slithering is OK!
 // (b) Turning works - 1 or several detents turn correctly, reliably.
@@ -109,9 +104,9 @@
 // this does not happen. ACCEPTABLE.
 
 extern volatile int32_t timer_isr_countdown; // Required to control timing
-const int VGA_board_size = CHECKS_WIDE; // Provided for extern
+const int snake_board_size = CHECKS_WIDE; // Provided for extern
 
-void VGA_ram_health(uint16_t dummy_var, uint16_t pattern){
+void ram_health(uint16_t dummy_var, uint16_t pattern){
 	// DEBUGGING PHASE: LOCK UP THE PROGRAM if RAM is corrupted.
 	if (dummy_var != pattern){
 		while(1);
@@ -119,7 +114,7 @@ void VGA_ram_health(uint16_t dummy_var, uint16_t pattern){
 }
 
 
-void VGA_main(void){
+void snake_main(void){
 	const int32_t timer_isr_500ms_restart = 500;
 	const int32_t timer_isr_2000ms_restart = 2000;
 
@@ -142,34 +137,34 @@ void VGA_main(void){
 	// Output object
 	// Block all interrupts while initializing - initial protocol timing is critical.
 	__disable_irq();
-	init_display_VGA(FOURX);
+	display_init();
 	__enable_irq();
 
 	// Welcome screen = checkerboard for 2 seconds.
 	timer_isr_countdown = timer_isr_2000ms_restart;
-	display_checkerboard_VGA();
+	display_checkerboard();
 	while (timer_isr_countdown > 0){}
 	timer_isr_countdown = timer_isr_500ms_restart;
 	// Confirm all the rules and paint the initial snake.
-	display_color_VGA(0x0F);
+	display_blank();
 	//snake_game_cleanup(&my_game);
 
 	// OPERATE THE GAME
 	int32_t prior_timer_countdown = timer_isr_countdown;
 
 	while(1){
-		VGA_ram_health(ram_dummy_1, MEMORY_BARRIER_1);
-		VGA_ram_health(ram_dummy_2, MEMORY_BARRIER_2);
-		VGA_ram_health(ram_dummy_3, MEMORY_BARRIER_3);
+		ram_health(ram_dummy_1, MEMORY_BARRIER_1);
+		ram_health(ram_dummy_2, MEMORY_BARRIER_2);
+		ram_health(ram_dummy_3, MEMORY_BARRIER_3);
 
-		// ASSERT TIMER COUNTDOWN IN RANGE
+	// ASSERT TIMER COUNTDOWN IN RANGE
 		if ((timer_isr_countdown > timer_isr_500ms_restart)||
 				(timer_isr_countdown < 0)){
-			display_checkerboard_VGA();
+			display_checkerboard();
 			while(1);
 		}
 
-#ifndef TEST_WITHOUT_INPUT_VGA
+#ifndef TEST_WITHOUT_INPUT
 		// Check for user input every 1 ms & paint one block of the display.
 		if (prior_timer_countdown != timer_isr_countdown ){
 			prior_timer_countdown = timer_isr_countdown;
@@ -194,7 +189,7 @@ void VGA_main(void){
 					(my_game.heading != SNAKE_COMPASS_E)&&
 					(my_game.heading != SNAKE_COMPASS_S)&&
 					(my_game.heading != SNAKE_COMPASS_W));
-			incremental_show_pong((const snake_game *)&my_game, false);
+			incremental_show_snake((const snake_game *)&my_game, false);
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
@@ -203,13 +198,12 @@ void VGA_main(void){
 			incremental_show_snake(&my_game, true);
 		}
 #endif
-#ifdef TEST_WITHOUT_INPUT_VGA
+#ifdef TEST_WITHOUT_INPUT
 		static int turns = 0;
 		// Normally "check for user input every 1 ms & show" - here just update display
 		if (prior_timer_countdown != timer_isr_countdown ){
 			prior_timer_countdown = timer_isr_countdown;
-			incremental_show_pong(&my_game, false);
-//			incremental_test_screen();
+			incremental_show_snake(&my_game, false);
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
@@ -225,8 +219,7 @@ void VGA_main(void){
 				snake_heading_update(&my_game, &turn_q);
 				snake_periodic_play(&my_game);
 			}
-			incremental_show_pong(&my_game, true);
-//			incremental_test_screen();
+			incremental_show_snake(&my_game, true);
 		}
 #endif
 	}
