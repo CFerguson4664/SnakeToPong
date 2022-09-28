@@ -6,7 +6,7 @@
  */
 
 #include "snake_enums.h"
-#include "snake_gameplay.h"
+#include "pong_gameplay.h"
 #include "display_VGA.h"
 
 extern uint8_t xCap;
@@ -19,13 +19,13 @@ static uint8_t circular_shift(uint8_t color, uint8_t numShifts) {
 	return (temp | temp2);
 }
 
-void incremental_show_pong(const snake_game* s, bool board_updated){
+void incremental_show_pong(const pong_game* p, bool board_updated){
 	static int16_t x = 0;
 	static int16_t y = 0;
 	static int8_t b[CHECKS_WIDE][CHECKS_WIDE] = {0};
 
 	const int checkerboard_squares = CHECKS_WIDE;
-	const int green = 0x0C;
+	const int green = 0x3C;
 	const int red = 0x30;
 	const int black = 0x00;
 
@@ -40,8 +40,9 @@ void incremental_show_pong(const snake_game* s, bool board_updated){
 			}
 		}
 		// paint canvas
-		snake_plot(s,b);
-		fruit_plot(s,b);
+		paddle_plot(p,b);
+		ball_plot(p,b);
+
 		// restart at top-left
 		x = 0;
 		y = 0;

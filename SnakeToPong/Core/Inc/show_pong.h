@@ -8,9 +8,9 @@
 #ifndef INC_SHOW_PONG_H_
 #define INC_SHOW_PONG_H_
 
-#include "snake_gameplay.h"
+#include "pong_gameplay.h"
 
-void incremental_show_pong(const snake_game* s, bool board_updated);
+void incremental_show_pong(const pong_game* s, bool board_updated);
 void incremental_test_screen();
 
 #endif /* INC_SHOW_PONG_H_ */

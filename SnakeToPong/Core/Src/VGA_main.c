@@ -87,7 +87,7 @@
 #include <cmsis_gcc.h>
 #include <VGA_main.h>
 #include "main.h"
-#include "snake_gameplay.h"
+#include "pong_gameplay.h"
 #include "display_VGA.h"
 #include "snake_enums.h"
 #include "VGA_enums.h"
@@ -125,9 +125,9 @@ void VGA_main(void){
 
 	// INITIALIZE THE GAME
 	// Construct the model "game" object:
-	snake_game my_game;
+	pong_game my_game;
 	volatile uint16_t ram_dummy_1 = MEMORY_BARRIER_1;
-	snake_game_init(&my_game);
+	pong_game_init(&my_game);
 
 	// Construct IPC
 	Smc_queue turn_q;
@@ -214,17 +214,9 @@ void VGA_main(void){
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
-			if (turns < 3){
-				turns ++;
-				snake_periodic_play(&my_game);
-			}
-			else {
-				turns = 0;
-				Q_data command_packet = {.twist = QUADKNOB_CW};
-				turn_q.put(&turn_q, &command_packet);
-				snake_heading_update(&my_game, &turn_q);
-				snake_periodic_play(&my_game);
-			}
+			paddle_update(&my_game, &turn_q);
+			pong_periodic_play(&my_game);
+
 			incremental_show_pong(&my_game, true);
 //			incremental_test_screen();
 		}

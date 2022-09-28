@@ -28,14 +28,11 @@ typedef struct {
 
 } pong_game;
 
-enum snake_compass_dir snake_opposite_direction(enum snake_compass_dir d);
-void snake_game_init(snake_game* s);
-void snake_game_cleanup(snake_game* s);
-void snake_heading_update(snake_game* snake, Smc_queue* q);
-void snake_periodic_play(snake_game *snake);
-void snake_place_fruit(snake_game * s, const int8_t b[CHECKS_WIDE][CHECKS_WIDE]);
-bool snake_plot(const snake_game *s, int8_t b[CHECKS_WIDE][CHECKS_WIDE]);
-bool fruit_plot(const snake_game *s, int8_t b[CHECKS_WIDE][CHECKS_WIDE]);
+void pong_game_init(pong_game *p);
+void pong_periodic_play(pong_game *p);
+void paddle_update(pong_game* p,Smc_queue* q);
+bool ball_plot(const pong_game* p, int8_t b [CHECKS_WIDE][CHECKS_WIDE]);
+void paddle_plot(const pong_game* p, int8_t b[CHECKS_WIDE][CHECKS_WIDE]);
 
 #endif /* SNAKE_GAMEPLAY_H_ */
 
