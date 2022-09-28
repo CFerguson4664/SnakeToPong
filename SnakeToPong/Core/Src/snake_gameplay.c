@@ -104,22 +104,6 @@ void snake_game_init(snake_game* s){
 	s->heading = SNAKE_COMPASS_S; // Start off toward the bottom.
 }
 
-void pong_game_init(pong_game* p){
-	const XY_PT initial_ball = {3,3};
-	const XY_PT initial_Lpad = {0,4};
-	const XY_PT initial_Rpad = {7,4};
-	const int8_t initial_Llength = 3;
-	const int8_t initial_Rlength = 3;
-	p->ball.x = initial_head.x;
-	p->ball.y = initial_head.y;
-
-
-	p->Rlength = initial_Rlength;
-	p->Llength = initial_Llength;
-	p->heading = BALL_COMPASS_E;
-
-}
-
 
 void pacify_compiler(){
 
@@ -289,15 +273,3 @@ void snake_periodic_play(snake_game* s){
 	}
 }
 
-void pong_periodic_play(pong_game* s){
-	static int8_t board[CHECKS_WIDE][CHECKS_WIDE];
-
-	for (int x = 0; x < CHECKS_WIDE; x++){
-		for (int y = 0; y < CHECKS_WIDE; y++){
-			board[x][y] = 0;
-		}
-	}
-	bool ok;
-	ok = pong_plot(s, board) && fruit_plot(s, board);
-
-}

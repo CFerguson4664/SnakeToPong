@@ -2,7 +2,7 @@
 // carrolls@trine.edu 2022.7.28 - merged into project
 // carrolls@trine.edu 2022.07.04
 // Game "snake - Eight-by-eight board
-// Board encoding: -1 = fruit. 0 = empty. 1 = head;  2 = neck, ...
+// Board encoding: -1 = ball. 0 = empty. 1 = paddle;
 // so the snake's body comprises consecutive integers.
 
 //// STATUS - Works.
@@ -73,4 +73,63 @@ void pong_periodic_play(pong_game* p){
 	p->ball.x += p->balldir.x; //Moves the real ball once we check to see if the move is valid.
 	p->ball.y += p->balldir.y;
 
+}
+
+void pacify_compiler(){
+
+}
+
+void paddle_update(pong_game* p,Smc_queue* q){
+	Q_data msg; //Variable that will hold the input request.
+	bool data_available;
+	data_availabe = q->get(q,&msg);
+	if(!data_available) return;
+	else{
+		switch(msg.int_val){
+		case 1:
+			if(p->Lpad.y > 0){
+				p->Lpad.y -= 1;
+			}
+			break;
+		case 2:
+			if(p->Lpad.y < 7){
+				p->Lpad.y += 1;
+			}
+			break;
+		case 3:
+			if(p->Rpad.y > 0){
+				p->Rpad.y -= 1;
+			}
+			break;
+		case 4:
+			if(p->Rpad.y < 7){
+				p->Rpad.y += 1;
+			}
+			break;
+		default: //do nothing
+			pacify_compiler();
+		}
+	}
+}
+
+bool ball_plot(const pong_game* p, int8_t b [CHECKS_WIDE][CHECKS_WIDE]){
+	bool ok = true;
+	if (b[p->ball.x][p->ball.y] == -1) ok = true;
+	else if (b[p->ball.x][p->ball.y] == 0){
+		ok = true;
+		b[p->ball.x][p->ball.y] = -1;
+	}
+	else{
+		ok = false;
+	}
+	return ok;
+}
+
+void paddle_plot(const pong_game* p, int8_t b[CHECKS_WIDE][CHECKS_WIDE]){
+	b[p->Lpad.x][p->Lpad.y+1] = 1;
+	b[p->Lpad.x][p->Lpad.y] = 1;
+	b[p->Lpad.x][p->Lpad.y-1] = 1;
+	b[p->Rpad.x][p->Rpad.y+1] = 1;
+	b[p->Rpad.x][p->Rpad.y] = 1;
+	b[p->Rpad.x][p->Rpad.y-1] = 1;
 }
