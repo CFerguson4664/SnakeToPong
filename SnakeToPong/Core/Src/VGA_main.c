@@ -130,9 +130,9 @@ void VGA_main(void){
 	pong_game_init(&my_game);
 
 	// Construct IPC
-	Smc_queue turn_q;
+	Smc_queue move_q;
 	volatile uint16_t ram_dummy_2 = MEMORY_BARRIER_2;
-	smc_queue_init(&turn_q);
+	smc_queue_init(&move_q);
 
 	// Input object
 	QuadKnob user_knob_1;
@@ -214,7 +214,7 @@ void VGA_main(void){
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
-			paddle_update(&my_game, &turn_q);
+			paddle_update(&my_game, &move_q);
 			pong_periodic_play(&my_game);
 
 			incremental_show_pong(&my_game, true);
