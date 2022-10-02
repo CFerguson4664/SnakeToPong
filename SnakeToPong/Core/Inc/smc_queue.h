@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "snake_enums.h"
-#include "keypad.h"
+#include "keypad_enums.h"
 
 
 #define SMC_Q_BUFSIZE 10

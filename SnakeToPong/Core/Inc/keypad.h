@@ -8,6 +8,10 @@
 #ifndef INC_KEYPAD_H_
 #define INC_KEYPAD_H_
 
-enum Moves {None, Left_Up, Left_Down, Right_Up, Right_Down};
+#include "smc_queue.h"
+#include "keypad_enums.h"
+
+void check_buttons();
+//void pressed_enqueue(Smc_queue *move_q);
 
 #endif /* INC_KEYPAD_H_ */

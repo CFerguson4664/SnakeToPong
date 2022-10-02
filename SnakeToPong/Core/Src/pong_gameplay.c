@@ -17,9 +17,7 @@
 #include "quadknob.h"
 #include "snake_enums.h"
 #include "display_DOGS_102.h"
-
-#define ERROR_DISPLAY_BAD_HEADING {{1,0},{1,1},{1,2}, {1,4},{1,5},{1,6}}
-#define ERROR_DISPLAY_BLOCK_COUNT 6
+#include "keypad.h"
 
 
 void pong_game_init(pong_game* p){
@@ -64,11 +62,17 @@ void pong_periodic_play(pong_game* p){
 	else if(tempBall.y > 7){ //if we hit the bottom wall
 		p->balldir.y *= -1; //flip the y coordinate
 	}
+
+
+	XY_PT tempBall2 = {p->ball.x, p->ball.y }; //Initialize and assign a temporary ball.
+	tempBall2.x += p->balldir.x;//Move the temporary ball
+	tempBall2.y += p->balldir.y;
+
 	//if statement to check if the temp ball hit the paddle
-	if(tempBall.x < 1 && (p->Lpad.y + 1 == tempBall.y || p->Lpad.y == tempBall.y || p->Lpad.y-1 == tempBall.y)){ //if temp ball hits left paddle
+	if(tempBall2.x <= 0 && (p->Lpad.y + 1 == tempBall2.y || p->Lpad.y == tempBall2.y || p->Lpad.y-1 == tempBall2.y)){ //if temp ball hits left paddle
 		p->balldir.x *= -1;
 	}
-	else if(tempBall.x > 6 && (p->Rpad.y + 1 == tempBall.y || p->Rpad.y == tempBall.y || p->Rpad.y-1 == tempBall.y)){ //if temp ball hits right paddle
+	else if(tempBall2.x >= 7 && (p->Rpad.y + 1 == tempBall2.y || p->Rpad.y == tempBall2.y || p->Rpad.y-1 == tempBall2.y)){ //if temp ball hits right paddle
 		p->balldir.x *= -1;
 	}
 
@@ -85,32 +89,37 @@ void paddle_update(pong_game* p,Smc_queue* q){
 	Q_data msg; //Variable that will hold the input request.
 	bool data_available;
 	data_available = q->get(q,&msg);
-	if(!data_available) return;
-	else{
-		switch(msg.int_val){
-		case 1:
-			if(p->Lpad.y > 0){
-				p->Lpad.y -= 1;
+
+	while(data_available) {
+		if(!data_available) return;
+		else{
+			switch(msg.button){
+			case Left_Up:
+				if(p->Lpad.y > 1){
+					p->Lpad.y -= 1;
+				}
+				break;
+			case Left_Down:
+				if(p->Lpad.y < 6){
+					p->Lpad.y += 1;
+				}
+				break;
+			case Right_Up:
+				if(p->Rpad.y > 1){
+					p->Rpad.y -= 1;
+				}
+				break;
+			case Right_Down:
+				if(p->Rpad.y < 6){
+					p->Rpad.y += 1;
+				}
+				break;
+			default: //do nothing
+				pacify_compiler();
 			}
-			break;
-		case 2:
-			if(p->Lpad.y < 7){
-				p->Lpad.y += 1;
-			}
-			break;
-		case 3:
-			if(p->Rpad.y > 0){
-				p->Rpad.y -= 1;
-			}
-			break;
-		case 4:
-			if(p->Rpad.y < 7){
-				p->Rpad.y += 1;
-			}
-			break;
-		default: //do nothing
-			pacify_compiler();
 		}
+
+		data_available = q->get(q,&msg);
 	}
 }
 
