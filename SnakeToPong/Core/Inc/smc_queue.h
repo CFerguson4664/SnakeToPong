@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "snake_enums.h"
+#include "keypad_enums.h"
 
 
 #define SMC_Q_BUFSIZE 10
@@ -31,7 +32,7 @@
 typedef union {
 		int int_val;
 		float float_val;
-		enum Twist twist;
+		enum Moves button;
 } Q_data;
 
 typedef struct smc_queue_struct {

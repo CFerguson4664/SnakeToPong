@@ -21,8 +21,9 @@ typedef struct {
 	enum snake_compass_dir vertebra[CHECKS_WIDE * CHECKS_WIDE];
 	XY_PT head;
 	XY_PT fruit;
-	uint8_t length;
-	enum snake_compass_dir heading;
+	uint8_t Rlength;
+	uint8_t Llength;
+	enum snake_compass_dir heading[];
 } snake_game;
 
 enum snake_compass_dir snake_opposite_direction(enum snake_compass_dir d);

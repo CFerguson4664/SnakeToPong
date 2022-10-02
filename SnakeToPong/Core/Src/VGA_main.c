@@ -87,18 +87,19 @@
 #include <cmsis_gcc.h>
 #include <VGA_main.h>
 #include "main.h"
-#include "snake_gameplay.h"
+#include "pong_gameplay.h"
 #include "display_VGA.h"
 #include "snake_enums.h"
 #include "VGA_enums.h"
 #include "quadknob.h"
 #include "smc_queue.h"
 #include "show_pong.h"
+#include "keypad.h"
 
 ///////////////////////////
 // Test -without input, the expected output = snake goes straight ahead every 1/2 second.
 // Without_Input - Works!
-#define TEST_WITHOUT_INPUT_VGA
+//#define TEST_WITHOUT_INPUT_VGA
 
 // Test - with input: ... (a) Slithering is OK!
 // (b) Turning works - 1 or several detents turn correctly, reliably.
@@ -125,14 +126,14 @@ void VGA_main(void){
 
 	// INITIALIZE THE GAME
 	// Construct the model "game" object:
-	snake_game my_game;
+	pong_game my_game;
 	volatile uint16_t ram_dummy_1 = MEMORY_BARRIER_1;
-	snake_game_init(&my_game);
+	pong_game_init(&my_game);
 
 	// Construct IPC
-	Smc_queue turn_q;
+	Smc_queue move_q;
 	volatile uint16_t ram_dummy_2 = MEMORY_BARRIER_2;
-	smc_queue_init(&turn_q);
+	smc_queue_init(&move_q);
 
 	// Input object
 	QuadKnob user_knob_1;
@@ -178,29 +179,19 @@ void VGA_main(void){
 			// update "knob" object (which debounces each input pin and
 			// then calculates user command).
 
-			bool user_knob_1_pin_A = (GPIO_PIN_SET == HAL_GPIO_ReadPin(QuadKnobA_GPIO_Port, QuadKnobA_Pin));
-			bool user_knob_1_pin_B = (GPIO_PIN_SET == HAL_GPIO_ReadPin(QuadKnobB_GPIO_Port, QuadKnobB_Pin));
-			user_knob_1.update(&user_knob_1, user_knob_1_pin_A, user_knob_1_pin_B);
+			check_buttons(&move_q);
+			paddle_update(&my_game, &move_q);
 
-			// Get user command from "knob" - if any action, make it a queue packet and then mail it.
-			if (user_knob_1.get(&user_knob_1) != QUADKNOB_STILL){
-				Q_data command_packet;
-				command_packet.twist = user_knob_1.get(&user_knob_1);
-				turn_q.put(&turn_q, &command_packet);
-			}
-			snake_heading_update(&my_game, &turn_q);
-		// ASSERT HEADING IS VALID
-			while ((my_game.heading != SNAKE_COMPASS_N)&&
-					(my_game.heading != SNAKE_COMPASS_E)&&
-					(my_game.heading != SNAKE_COMPASS_S)&&
-					(my_game.heading != SNAKE_COMPASS_W));
-			incremental_show_pong((const snake_game *)&my_game, false);
+			incremental_show_pong((const pong_game *)&my_game, false);
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
-			snake_periodic_play(&my_game);
-			incremental_show_snake(&my_game, true);
+//			pressed_enqueue(&move_q);
+			check_buttons(&move_q);
+			paddle_update(&my_game, &move_q);
+			pong_periodic_play(&my_game);
+			incremental_show_pong(&my_game, true);
 		}
 #endif
 #ifdef TEST_WITHOUT_INPUT_VGA
@@ -214,17 +205,9 @@ void VGA_main(void){
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
-			if (turns < 3){
-				turns ++;
-				snake_periodic_play(&my_game);
-			}
-			else {
-				turns = 0;
-				Q_data command_packet = {.twist = QUADKNOB_CW};
-				turn_q.put(&turn_q, &command_packet);
-				snake_heading_update(&my_game, &turn_q);
-				snake_periodic_play(&my_game);
-			}
+			paddle_update(&my_game, &move_q);
+			pong_periodic_play(&my_game);
+
 			incremental_show_pong(&my_game, true);
 //			incremental_test_screen();
 		}
