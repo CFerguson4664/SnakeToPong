@@ -12,11 +12,10 @@
 #include <stddef.h> // size_t
 #include <stdint.h>
 #include <stdbool.h>
-#include "snake_enums.h"
 #include "keypad_enums.h"
+#include "display_VGA.h"
 
-
-#define SMC_Q_BUFSIZE 10
+#define SMC_Q_BUFSIZE 80
 
 // To make a queue that is easy to revise to hold any type
 // this file defines the contents of all queues as Q_data
@@ -27,12 +26,11 @@
 // I am showing off a feature by using a UNION, but replacing
 // if with "typedef int32_t Q_data;" would be simpler and safer.
 
-
-
 typedef union {
 		int int_val;
 		float float_val;
 		enum Moves button;
+		VGA_Pixel pixel;
 } Q_data;
 
 typedef struct smc_queue_struct {
@@ -53,8 +51,5 @@ Smc_queue* smc_queue_init( Smc_queue* Q);
 bool smc_queue_put(Smc_queue *q, const Q_data *msg);
 bool smc_queue_peek(const Smc_queue *q, Q_data *msg);
 bool smc_queue_get(Smc_queue *q, Q_data *msg);
-
-
-
 
 #endif /* INC_SMC_QUEUE_STRUCT_H_ */

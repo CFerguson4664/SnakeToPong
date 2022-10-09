@@ -1,42 +1,11 @@
-// carrolls@trine.edu 2022.7.22
-// Now part of G071_Demo_Snake
-///////////////////////////////////////////////
-// DogsA - initializes and displays a checkerboard of 8x8 pixel
-// squares alternating foreground/background color on a DOGS102
-// 64x102 pixel graphic display ($17).
-// By Sean Carroll, Trine U, v. 2022.6.22 = Nucleo-G071 SPI Master.
-// Purpose = Demo project - uses CubeMX and HAL.
-// NOTE - SPI1 appears to be used by the debugger.
-// Software-Defined Requirements:
-//     SPI.SCK out on PB10, SPI.MOSI on PC3,
-//     GP_O.nReset out @ PA_0, GPO.nCS @ PD_9, GPO.nC_D @ PA_1
-//  TESTED as of 2022.6.21
-// POWER = 3.3 V and GND.
-//////////////////////////////////////////////
-// /*WIRING:
-		// 15|---||-GND
-		// 16|-------,
-		// 17|--||,  |
-		// 18|----'  |
-		// 19|----||-'
-		// 20|--GND
-		// 21|--GND
-		// 22|--3.3v
-		// 23|--3.3v
-		// 24|--SDA-- (NucleoG071/PC3)
-		// 25|--SCK-- (NucleoG071/PB10)
-		// 26|--CD--- (NucleoG071/PA1)
-		// 27|--RST-- (NucleoG071/PA0)
-		// 28|--CS0-- (NucleoG071/PD9 - nSS)
-// */
-
+// Christopher Ferguson
+// 10/4/2022
 
 // This display driver uses the pins defined in an .ioc file
 // created with STM32CubeMX.
 #include "main.h"
+#include "VGA_main.h"
 #include "display_VGA.h"
-#include "snake_enums.h"
-#include "snake_gameplay.h" // To learn "CHECKS_WIDE"
 
 /////////////////////////////////////////////////////////////////////////////
 // Hand-written code that Cube won't help with
@@ -50,7 +19,6 @@ extern  SPI_HandleTypeDef hspi2; //TUTORIAL ...
 uint8_t xCap = 0;
 uint8_t yCap = 0;
 static enum VGA_Scale currentScale = UNKNOWN;
-
 
 void init_display_VGA(enum VGA_Scale scale) {
 	const uint8_t numBlanks = 5;
@@ -92,8 +60,8 @@ void set_VGA_scale(enum VGA_Scale scale) {
 			currentScale = UNKNOWN;
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-			xCap = 0;   // xCap = 56
-			yCap = 0;	// yCap = 32
+			xCap = 0;   // xCap = 0
+			yCap = 0;	// yCap = 0
 			break;
 		}
 	}
@@ -119,11 +87,9 @@ static void spi_SS_High() {
 
 
 void display_blank_VGA(){
-	const uint8_t black = 0x00;
-
 	for(uint8_t x = 0; x < xCap; x++) {
 		for(uint8_t y = 0; y < yCap; y++) {
-			display_square_VGA(x,y,black);
+			display_square_VGA(x,y,BLACK);
 		}
 	}
 }
@@ -138,17 +104,14 @@ void display_color_VGA(uint8_t color){
 
 
 void display_checkerboard_VGA(void){
-	const uint8_t black = 0x00;
-	const uint8_t white = 0x3F;
-
 	for(uint8_t x = 0; x < xCap; x++) {
 		for(uint8_t y = 0; y < yCap; y++) {
 			uint8_t isBlack = (x & 0x01) ^ (y & 0x01);
 			if(isBlack == 0) {
-				display_square_VGA(x, y, black);
+				display_square_VGA(x, y, BLACK);
 			}
 			else {
-				display_square_VGA(x, y, white);
+				display_square_VGA(x, y, WHITE);
 			}
 		}
 	}
@@ -177,11 +140,11 @@ void display_snake_board_VGA(int8_t board[CHECKS_WIDE][CHECKS_WIDE]){
 
 
 void display_white_square_VGA(uint8_t l_to_r, uint8_t t_to_b){
-	display_square_VGA(l_to_r, t_to_b, 0xFF);
+	display_square_VGA(l_to_r, t_to_b, WHITE);
 }
 
 void display_dark_square_VGA(uint8_t l_to_r, uint8_t t_to_b){
-	display_square_VGA(l_to_r, t_to_b, 0x00);
+	display_square_VGA(l_to_r, t_to_b, BLACK);
 }
 
 void display_square_VGA(uint8_t l_to_r, uint8_t t_to_b, uint8_t color){

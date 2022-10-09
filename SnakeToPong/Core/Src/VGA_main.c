@@ -82,78 +82,93 @@
 
 
 #include <stdint.h>
-#include <stdlib.h> // rand
 #include <stdbool.h>
 #include <cmsis_gcc.h>
 #include <VGA_main.h>
 #include "main.h"
 #include "pong_gameplay.h"
 #include "display_VGA.h"
-#include "snake_enums.h"
 #include "VGA_enums.h"
-#include "quadknob.h"
 #include "smc_queue.h"
 #include "show_pong.h"
 #include "keypad.h"
 
-///////////////////////////
-// Test -without input, the expected output = snake goes straight ahead every 1/2 second.
-// Without_Input - Works!
-//#define TEST_WITHOUT_INPUT_VGA
 
-// Test - with input: ... (a) Slithering is OK!
-// (b) Turning works - 1 or several detents turn correctly, reliably.
-// (c) New fruit is visible.
-// (d) The tail of the snake follows the head correctly.
-// (e) the display sometimes flips to 12-o'clock position instead of
-// 6 o'clock? SUSPICIOUS - wiring/ground at the knob... when I am gentle
-// this does not happen. ACCEPTABLE.
+// Color Constants
+const uint8_t WHITE = 0x3F;
+const uint8_t BLACK = 0x00;
+
+// Object Color Constants
+const uint8_t BACKGROUND_COLOR = 0x0F;
+const uint8_t BLANK_COLOR = 0x00;
+const uint8_t BALL_COLOR = 0x3C;
+const uint8_t PADDLE_COLOR = 0x03;
+
+// Display Constants
+const uint8_t DISPLAY_WIDTH = 56;
+const uint8_t DISPLAY_HEIGHT = 32;
+
+// Ball Constants
+const XY_PT INITIAL_BALL = {6,3};
+const XY_PT INITIAL_BALLDIR = {-1,-1};
+
+// Paddle Constants
+const XY_PT INITIAL_LPAD = {0,4}; //Left Paddle values
+const XY_PT INITIAL_RPAD = {7,4}; //Right Paddle values
+
+///////////////////////////
+// Test -without input, the expected output = the ball bounces around until a player wins
+// Without_Input - Works!
+// #define TEST_WITHOUT_INPUT_VGA
+// #define TEST_ONLY_SCREEN
+
 
 extern volatile int32_t timer_isr_countdown; // Required to control timing
 const int VGA_board_size = CHECKS_WIDE; // Provided for extern
 
 void VGA_ram_health(uint16_t dummy_var, uint16_t pattern){
-	// DEBUGGING PHASE: LOCK UP THE PROGRAM if RAM is corrupted.
+	// Check if ram is valid
 	if (dummy_var != pattern){
-		while(1);
+		display_checkerboard_VGA();
+
+		// Since this is just a game, we will reboot if we get a ram error
+		HAL_NVIC_SystemReset();
 	}
 }
-
 
 void VGA_main(void){
 	const int32_t timer_isr_500ms_restart = 500;
 	const int32_t timer_isr_2000ms_restart = 2000;
 
 	// INITIALIZE THE GAME
-	// Construct the model "game" object:
-	pong_game my_game;
-	volatile uint16_t ram_dummy_1 = MEMORY_BARRIER_1;
-	pong_game_init(&my_game);
 
 	// Construct IPC
 	Smc_queue move_q;
 	volatile uint16_t ram_dummy_2 = MEMORY_BARRIER_2;
 	smc_queue_init(&move_q);
 
-	// Input object
-	QuadKnob user_knob_1;
+	Smc_queue disp_q;
 	volatile uint16_t ram_dummy_3 = MEMORY_BARRIER_3;
-	quadknob_init(&user_knob_1);
+	smc_queue_init(&disp_q);
+
+	// Construct the model "game" object:
+	pong_game my_game;
+	volatile uint16_t ram_dummy_1 = MEMORY_BARRIER_1;
+	pong_game_init(&my_game, &disp_q);
 
 	// Output object
-	// Block all interrupts while initializing - initial protocol timing is critical.
-	__disable_irq();
-	init_display_VGA(FOURX);
-	__enable_irq();
+	// Initialize Screen Resolution
+	init_display_VGA(FOURX); // FOURX -> Display an 8x8 grid
 
-	// Welcome screen = checkerboard for 2 seconds.
+	// Welcome screen = Checker board for 2 seconds.
 	timer_isr_countdown = timer_isr_2000ms_restart;
 	display_checkerboard_VGA();
 	while (timer_isr_countdown > 0){}
+
+
+	// Confirm all the rules and paint the initial background.
 	timer_isr_countdown = timer_isr_500ms_restart;
-	// Confirm all the rules and paint the initial snake.
-	display_color_VGA(0x0F);
-	//snake_game_cleanup(&my_game);
+	display_color_VGA(BACKGROUND_COLOR);
 
 	// OPERATE THE GAME
 	int32_t prior_timer_countdown = timer_isr_countdown;
@@ -164,56 +179,67 @@ void VGA_main(void){
 		VGA_ram_health(ram_dummy_3, MEMORY_BARRIER_3);
 
 		// ASSERT TIMER COUNTDOWN IN RANGE
-		if ((timer_isr_countdown > timer_isr_500ms_restart)||
-				(timer_isr_countdown < 0)){
+		if ((timer_isr_countdown > timer_isr_500ms_restart) || (timer_isr_countdown < 0)){
 			display_checkerboard_VGA();
-			while(1);
+
+			// Since this is just a game, we will reset if the timer is out of range
+			HAL_NVIC_SystemReset();
 		}
 
+#ifndef TEST_ONLY_SCREEN
 #ifndef TEST_WITHOUT_INPUT_VGA
 		// Check for user input every 1 ms & paint one block of the display.
 		if (prior_timer_countdown != timer_isr_countdown ){
 			prior_timer_countdown = timer_isr_countdown;
-			// If time changed, about 1 ms has elapsed.
-			// Once each 1 ms, read input pins from user knob and then
-			// update "knob" object (which debounces each input pin and
-			// then calculates user command).
 
 			check_buttons(&move_q);
-			paddle_update(&my_game, &move_q);
+			paddle_update(&my_game, &move_q, &disp_q);
 
-			incremental_show_pong((const pong_game *)&my_game, false);
+			incremental_show_pong(&disp_q);
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
-//			pressed_enqueue(&move_q);
+
 			check_buttons(&move_q);
-			paddle_update(&my_game, &move_q);
-			pong_periodic_play(&my_game);
-			incremental_show_pong(&my_game, true);
+			paddle_update(&my_game, &move_q, &disp_q);
+
+			pong_periodic_play(&my_game, &disp_q);
+
+			incremental_show_pong(&disp_q);
 		}
 #endif
 #ifdef TEST_WITHOUT_INPUT_VGA
-		static int turns = 0;
 		// Normally "check for user input every 1 ms & show" - here just update display
 		if (prior_timer_countdown != timer_isr_countdown ){
 			prior_timer_countdown = timer_isr_countdown;
-			incremental_show_pong(&my_game, false);
-//			incremental_test_screen();
+
+			incremental_show_pong(&disp_q);
 		}
 		if (timer_isr_countdown <= 0) {
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
-			paddle_update(&my_game, &move_q);
-			pong_periodic_play(&my_game);
 
-			incremental_show_pong(&my_game, true);
-//			incremental_test_screen();
+			paddle_update(&my_game, &move_q, &disp_q);
+			pong_periodic_play(&my_game, &disp_q);
+
+			incremental_show_pong(&disp_q);
+		}
+#endif
+#endif
+#ifdef TEST_ONLY_SCREEN
+		// Normally "check for user input every 1 ms & show" - here just update display
+		if (prior_timer_countdown != timer_isr_countdown ){
+			prior_timer_countdown = timer_isr_countdown;
+
+			incremental_test_screen(); //Can be used to test only the screen
+		}
+		if (timer_isr_countdown <= 0) {
+			// Move and animate every 500 ms
+			timer_isr_countdown = timer_isr_500ms_restart;
+
+			incremental_test_screen(); //Can be used to test only the screen
 		}
 #endif
 	}
 }
-
-// Time-wasting counter as delay (about 2 seconds).
-// for (uint32_t i = 0; i < 2345678; i++){;} // pause several sec b4 repeat all

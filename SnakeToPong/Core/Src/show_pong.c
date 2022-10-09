@@ -2,12 +2,13 @@
  * show_pong.c
  *
  *  Created on: Sep 27, 2022
- *      Author: CFerguson
+ *      Author: Christopher Ferguson
  */
 
-#include "snake_enums.h"
 #include "pong_gameplay.h"
 #include "display_VGA.h"
+#include "VGA_main.h"
+#include "smc_queue.h"
 
 extern uint8_t xCap;
 extern uint8_t yCap;
@@ -19,58 +20,32 @@ static uint8_t circular_shift(uint8_t color, uint8_t numShifts) {
 	return (temp | temp2);
 }
 
-void incremental_show_pong(const pong_game* p, bool board_updated){
-	static int16_t x = 0;
-	static int16_t y = 0;
-	static int8_t b[CHECKS_WIDE][CHECKS_WIDE] = {0};
-
-	const int checkerboard_squares = CHECKS_WIDE;
-	const int green = 0x3C;
-	const int red = 0x30;
-	const int black = 0x00;
+void incremental_show_pong(Smc_queue *disp_q){
+	static const int checkerboard_squares = CHECKS_WIDE;
 
 	uint8_t xOffset = (xCap - checkerboard_squares) / 2;
 	uint8_t yOffset = (yCap - checkerboard_squares) / 2;
 
-	if (board_updated){
-		// clear canvas
-		for (int r = 0; r < CHECKS_WIDE; r++){
-			for (int c = 0; c < CHECKS_WIDE; c++){
-				b[r][c] = 0;
+	Q_data msg; // Variable that will hold the display request.
+	bool data_available;
+	data_available = disp_q->get(disp_q, &msg); //Test to see of there is input data
+
+	while(data_available) {
+		if(!data_available) return;
+		else{
+			// ASSERT - Pixel Coordinates must be between 0 and 7 inclusive, but 0 is checked by the fact it is an unsigned in
+			if(msg.pixel.point.x > 7 ||  msg.pixel.point.y > 7) {
+				continue; // Skip to next iteration of loop;
 			}
-		}
-		// paint canvas
-		paddle_plot(p,b);
-		ball_plot(p,b);
 
-		// restart at top-left
-		x = 0;
-		y = 0;
-	}
-	if (b[x][y] == 0){
-		display_square_VGA(x + xOffset, y + yOffset, black);
-	}
-	else if(b[x][y] == -1)
-	{
-		display_square_VGA(x + xOffset,y + yOffset, red);
-	}
-	else {
-		display_square_VGA(x + xOffset,y + yOffset, green);
-	}
-
-	// Update the statics so that the next plot is a new cell.
-	x++;
-	if (x >= CHECKS_WIDE){
-		x = 0;
-		y++;
-		if (y >= CHECKS_WIDE){
-			y = 0;
+			display_square_VGA(msg.pixel.point.x + xOffset, msg.pixel.point.y + yOffset, msg.pixel.color);
 		}
+
+		data_available = disp_q->get(disp_q, &msg);
 	}
 }
 
-
-
+// Used to test only the screen
 void incremental_test_screen() {
 	const uint16_t rep = 1;
 	static uint8_t x = 0;

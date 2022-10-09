@@ -9,8 +9,9 @@
 #define INC_SHOW_PONG_H_
 
 #include "pong_gameplay.h"
+#include "smc_queue.h"
 
-void incremental_show_pong(const pong_game* s, bool board_updated);
+void incremental_show_pong(Smc_queue *disp_q);
 void incremental_test_screen();
 
 #endif /* INC_SHOW_PONG_H_ */

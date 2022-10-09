@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
 #include "smc_queue.h"
-#include "snake_main.h"
 #include "VGA_main.h"
 /* USER CODE END Includes */
 

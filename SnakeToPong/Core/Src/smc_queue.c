@@ -6,7 +6,6 @@
  */
 
 #include "smc_queue.h"
-#include "snake_enums.h"
 
 Smc_queue* smc_queue_init(Smc_queue* q){
 	q->head = 0;
@@ -42,7 +41,7 @@ bool smc_queue_get(Smc_queue *q, Q_data  *msg){
 	    // Get message from front
 		*msg = q->buffer[0];
 		// Shuffle others forward
-		for (int n = 0; n < (q->tail - 1); n++){
+		for (uint16_t n = 0; n < (q->tail - 1); n++){
 		   q->buffer[n] = q->buffer[n+1];
 		}
 		// Bookkeeping

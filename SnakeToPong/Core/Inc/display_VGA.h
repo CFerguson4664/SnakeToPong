@@ -8,14 +8,25 @@
 #ifndef INC_DISPLAY_VGA
 #define INC_DISPLAY_VGA
 
-#include "snake_enums.h"
+#include <stdint.h>
 #include "VGA_enums.h"
+#include "VGA_main.h"
 
-#define CHECKS_WIDE (((uint16_t)8))
-#define DISPLAY_WIDTH (((uint16_t)56))
-#define DISPLAY_HEIGHT (((uint16_t)32))
+extern const uint8_t DISPLAY_WIDTH;
+extern const uint8_t DISPLAY_HEIGHT;
 
-typedef struct {uint8_t nCD:1; uint8_t byte;} DOGS_packet;
+extern const uint8_t WHITE;
+extern const uint8_t BLACK;
+
+typedef struct {
+	uint8_t x;
+	uint8_t y;
+} Point;
+
+typedef struct {
+	Point point;
+	uint8_t color;
+} VGA_Pixel;
 
 void init_display_VGA(enum VGA_Scale scale);
 void display_blank_VGA(void);
