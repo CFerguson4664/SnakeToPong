@@ -2,7 +2,7 @@
  * show_pong.h
  *
  *  Created on: Sep 27, 2022
- *      Author: CFerguson
+ *      Author: Christopher Ferguson
  */
 
 #ifndef INC_SHOW_PONG_H_

@@ -3,6 +3,7 @@
  *
  *  Created on: Jul 15, 2022
  *      Author: carrolls
+ *      Modified By: Christopher Ferguson
  */
 
 #ifndef INC_SMC_QUEUE_STRUCT_H_

@@ -3,7 +3,7 @@
 // Copyright 2022 Sean Carroll
 // 2022.7.26
 //
-// Modified by CFerguson
+// Modified by Christopher Ferguson
 // 2022.9.27
 
 
@@ -20,15 +20,6 @@
 // * Task-decoupling
 // * Separated timing and operation logic
 //
-// Code overview:
-// "Control" (i.e. input) in this project is
-// one quad-encoded knob that sends messages
-// {CW/CCW/NO_TURN} to the "model" via queue.
-// The Model (aka process logic) plays "snake" on an 8x8
-// grid; the model uses a queue to send a message
-// "ready" to the "view."
-// The View (i.e. output layer) draws the snake and
-// fruit onto a 64 x 128 pixel display using 8x8 squares.
 //
 // Disclaimer:
 // Yes - it could be prettier, but this is a demo of
@@ -144,17 +135,12 @@ void VGA_main(void){
 
 	// Construct IPC
 	Smc_queue move_q;
-	volatile uint16_t ram_dummy_2 = MEMORY_BARRIER_2;
+	volatile uint16_t ram_dummy_1 = MEMORY_BARRIER_1;
 	smc_queue_init(&move_q);
 
 	Smc_queue disp_q;
-	volatile uint16_t ram_dummy_3 = MEMORY_BARRIER_3;
+	volatile uint16_t ram_dummy_2 = MEMORY_BARRIER_2;
 	smc_queue_init(&disp_q);
-
-	// Construct the model "game" object:
-	pong_game my_game;
-	volatile uint16_t ram_dummy_1 = MEMORY_BARRIER_1;
-	pong_game_init(&my_game, &disp_q);
 
 	// Output object
 	// Initialize Screen Resolution
@@ -176,7 +162,6 @@ void VGA_main(void){
 	while(1){
 		VGA_ram_health(ram_dummy_1, MEMORY_BARRIER_1);
 		VGA_ram_health(ram_dummy_2, MEMORY_BARRIER_2);
-		VGA_ram_health(ram_dummy_3, MEMORY_BARRIER_3);
 
 		// ASSERT TIMER COUNTDOWN IN RANGE
 		if ((timer_isr_countdown > timer_isr_500ms_restart) || (timer_isr_countdown < 0)){
@@ -193,7 +178,7 @@ void VGA_main(void){
 			prior_timer_countdown = timer_isr_countdown;
 
 			check_buttons(&move_q);
-			paddle_update(&my_game, &move_q, &disp_q);
+			paddle_update(&move_q, &disp_q);
 
 			incremental_show_pong(&disp_q);
 		}
@@ -202,9 +187,9 @@ void VGA_main(void){
 			timer_isr_countdown = timer_isr_500ms_restart;
 
 			check_buttons(&move_q);
-			paddle_update(&my_game, &move_q, &disp_q);
+			paddle_update(&move_q, &disp_q);
 
-			pong_periodic_play(&my_game, &disp_q);
+			pong_periodic_play(&disp_q);
 
 			incremental_show_pong(&disp_q);
 		}
@@ -220,8 +205,8 @@ void VGA_main(void){
 			// Move and animate every 500 ms
 			timer_isr_countdown = timer_isr_500ms_restart;
 
-			paddle_update(&my_game, &move_q, &disp_q);
-			pong_periodic_play(&my_game, &disp_q);
+			paddle_update(&move_q, &disp_q);
+			pong_periodic_play(&disp_q);
 
 			incremental_show_pong(&disp_q);
 		}

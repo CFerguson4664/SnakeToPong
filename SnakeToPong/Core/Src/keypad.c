@@ -2,7 +2,8 @@
  * keypad.c
  *
  *  Created on: Oct 2, 2022
- *      Author: jarre
+ *      Author: Jarrett Johns
+ *      Modified By: Christoper Ferguson
  */
 
 #include "main.h"

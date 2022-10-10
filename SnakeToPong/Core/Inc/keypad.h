@@ -2,7 +2,8 @@
  * keypad.h
  *
  *  Created on: Oct 2, 2022
- *      Author: jarre
+ *      Author: Jarrett Johns
+ *      Modified By: Christopher Ferguson
  */
 
 #ifndef INC_KEYPAD_H_
@@ -12,6 +13,5 @@
 #include "keypad_enums.h"
 
 void check_buttons();
-//void pressed_enqueue(Smc_queue *move_q);
 
 #endif /* INC_KEYPAD_H_ */

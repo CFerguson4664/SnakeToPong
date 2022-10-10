@@ -1,8 +1,8 @@
 /*
  * snake_main.h
  *
- *  Created on: Jul 26, 2022
- *      Author: carrolls
+ *  Created on: Sept 27, 2022
+ *      Author: Christopher Ferguson
  */
 
 #ifndef INC_VGA_MAIN_H_

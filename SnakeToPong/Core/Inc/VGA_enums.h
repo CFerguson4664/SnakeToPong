@@ -2,7 +2,7 @@
  * VGA_enums.h
  *
  *  Created on: Sep 27, 2022
- *      Author: CFerguson
+ *      Author: Christopher Ferguson
  */
 
 #ifndef INC_VGA_ENUMS_H_

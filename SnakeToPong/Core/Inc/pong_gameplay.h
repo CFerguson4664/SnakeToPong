@@ -1,12 +1,13 @@
 /*
  * snake_gameplay.h
  *
- *  Created on: Jul 28, 2022
- *      Author: carrolls
+ *  Created on: Sept 27, 2022
+ *      Author: Harrison Hiatt
+ *      Modified By: Christopher Ferguson
  */
 
-#ifndef SNAKE_GAMEPLAY_H_
-#define SNAKE_GAMEPLAY_H_
+#ifndef PONG_GAMEPLAY_H_
+#define PONG_GAMEPLAY_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -41,11 +42,9 @@ typedef struct {
 
 } pong_game;
 
-void pong_game_init(pong_game *p, Smc_queue *disp_q);
-void pong_periodic_play(pong_game *p, Smc_queue *disp_q);
-void paddle_update(pong_game* p, Smc_queue* move_q, Smc_queue* disp_q);
-bool ball_plot(const pong_game* p, int8_t b [CHECKS_WIDE][CHECKS_WIDE]);
-void paddle_plot(const pong_game* p, int8_t b[CHECKS_WIDE][CHECKS_WIDE]);
+void pong_game_init(Smc_queue *disp_q);
+void pong_periodic_play(Smc_queue *disp_q);
+void paddle_update(Smc_queue* move_q, Smc_queue* disp_q);
 
-#endif /* SNAKE_GAMEPLAY_H_ */
+#endif /* PONG_GAMEPLAY_H_ */
 

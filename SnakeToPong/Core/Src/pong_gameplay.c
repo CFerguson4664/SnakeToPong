@@ -7,9 +7,11 @@
 #include "pong_gameplay.h"
 #include "keypad.h"
 
+static pong_game *p;
+
 static void clear_board(Smc_queue *disp_q) {
-	for(uint8_t x = 0; x < 8; x++) {
-		for(uint8_t y = 0; y < 8; y++) {
+	for(uint8_t x = 0; x < (CHECKS_WIDE); x++) {
+		for(uint8_t y = 0; y < (CHECKS_WIDE); y++) {
 			Q_data data;
 			VGA_Pixel pixel;
 			pixel.point.x = x;
@@ -23,18 +25,18 @@ static void clear_board(Smc_queue *disp_q) {
 }
 
 static void redraw_paddle(XY_PT *pos, Smc_queue *disp_q) {
-	// ASSERT -> We are drawing a paddle so it must be either in column 0 or 7
-	if(pos->x != 0 && pos-> x != 7) {
+	// ASSERT -> We are drawing a paddle so it must be either in the first or last column
+	if(pos->x != 0 && pos-> x != ((CHECKS_WIDE) - 1)) {
 		return;
 	}
 
 	// ASSERT -> The center of the paddle must stay at least one pixel from the top and bottom of the screen
-	if(pos->y <= 0 || pos->y >= 7) {
+	if(pos->y <= 0 || pos->y >= ((CHECKS_WIDE) - 1)) {
 		return;
 	}
 
 	// Redraw the row
-	for(uint8_t i = 0; i < 8; i++) {
+	for(uint8_t i = 0; i < (CHECKS_WIDE); i++) {
 		Q_data data;
 		VGA_Pixel pixel;
 		pixel.point.x = pos->x;
@@ -56,12 +58,12 @@ static void redraw_paddle(XY_PT *pos, Smc_queue *disp_q) {
 static void resolve_paddle_changed_pixels(XY_PT *pos, int8_t moved, Smc_queue *disp_q) {
 
 	// ASSERT -> We are drawing a paddle so it must be either in column 0 or 7
-	if(pos->x != 0 && pos-> x != 7) {
+	if(pos->x != 0 && pos-> x != ((CHECKS_WIDE) - 1)) {
 		return;
 	}
 
 	// ASSERT -> The center of the paddle must stay at least one pixel from the top and bottom of the screen
-	if(pos->y <= 0 || pos->y >= 7) {
+	if(pos->y <= 0 || pos->y >= ((CHECKS_WIDE) - 1)) {
 		return;
 	}
 
@@ -237,7 +239,7 @@ static void resolve_paddle_changed_pixels(XY_PT *pos, int8_t moved, Smc_queue *d
 	}
 }
 
-void pong_game_init(pong_game* p, Smc_queue *disp_q){
+void pong_game_init(Smc_queue *disp_q){
 	//Set the initial position and velocity of the ball
 	p->ball.x = INITIAL_BALL.x;
 	p->ball.y = INITIAL_BALL.y;
@@ -258,7 +260,7 @@ void pong_game_init(pong_game* p, Smc_queue *disp_q){
 
 }
 
-void pong_periodic_play(pong_game* p, Smc_queue *disp_q){
+void pong_periodic_play(Smc_queue *disp_q){
 
 	XY_PT tempBall = {p->ball.x, p->ball.y }; //Initialize and assign a temporary ball.
 	tempBall.x += p->balldir.x;//Move the temporary ball
@@ -270,14 +272,14 @@ void pong_periodic_play(pong_game* p, Smc_queue *disp_q){
 		p->balldir.x = 0; //Stops the ball from moving in the x and y direction.
 		p->balldir.y = 0;
 	}
-	else if(tempBall.x > 7){ //if temp ball hits the right wall
+	else if(tempBall.x > ((CHECKS_WIDE) - 1)){ //if temp ball hits the right wall
 		p->balldir.x = 0; //Stops the ball from moving in the x and y direction.
 		p->balldir.y = 0;
 	}
 	else if(tempBall.y < 0){ //if we hit the top wall
 		p->balldir.y *= -1; //flip the y coordinate
 	}
-	else if(tempBall.y > 7){ //if we hit the bottom wall
+	else if(tempBall.y > ((CHECKS_WIDE) - 1)){ //if we hit the bottom wall
 		p->balldir.y *= -1; //flip the y coordinate
 	}
 
@@ -324,7 +326,7 @@ void pacify_compiler(){
 
 }
 
-void paddle_update(pong_game* p, Smc_queue* move_q, Smc_queue* disp_q){
+void paddle_update(Smc_queue* move_q, Smc_queue* disp_q){
 	Q_data msg; //Variable that will hold the input request.
 	bool data_available;
 	data_available = move_q->get(move_q, &msg); //Test to see of there is input data
@@ -338,25 +340,25 @@ void paddle_update(pong_game* p, Smc_queue* move_q, Smc_queue* disp_q){
 		else{
 			switch(msg.button){
 			case Left_Up:
-				if(p->Lpad.y > 1){
+				if(p->Lpad.y > 1){ // Make sure the left paddle has room to move up
 					p->Lpad.y -= 1; //move left paddle down
 					LPad_move -= 1;
 				}
 				break;
 			case Left_Down:
-				if(p->Lpad.y < 6){
+				if(p->Lpad.y < ((CHECKS_WIDE) - 2)){ // Make sure the left paddle has room to move down
 					p->Lpad.y += 1; //move left paddle up
 					LPad_move += 1;
 				}
 				break;
 			case Right_Up:
-				if(p->Rpad.y > 1){
+				if(p->Rpad.y > 1){ // Make sure the right paddle has room to move up
 					p->Rpad.y -= 1; //move right paddle up
 					RPad_move -= 1;
 				}
 				break;
 			case Right_Down:
-				if(p->Rpad.y < 6){
+				if(p->Rpad.y < ((CHECKS_WIDE) - 2)){ // Make sure the right paddle has room to move down
 					p->Rpad.y += 1; //Move right paddle down
 					RPad_move += 1;
 				}
@@ -369,31 +371,7 @@ void paddle_update(pong_game* p, Smc_queue* move_q, Smc_queue* disp_q){
 		data_available = move_q->get(move_q, &msg);
 	}
 
+	// Move the displayed paddle
 	resolve_paddle_changed_pixels(&p->Lpad, LPad_move, disp_q);
 	resolve_paddle_changed_pixels(&p->Rpad, RPad_move, disp_q);
-}
-
-
-
-
-bool ball_plot(const pong_game* p, int8_t b [CHECKS_WIDE][CHECKS_WIDE]){
-	bool ok = true;
-	if (b[p->ball.x][p->ball.y] == -1) ok = true;
-	else if (b[p->ball.x][p->ball.y] == 0){
-		ok = true;
-		b[p->ball.x][p->ball.y] = -1;
-	}
-	else{
-		ok = false;
-	}
-	return ok;
-}
-
-void paddle_plot(const pong_game* p, int8_t b[CHECKS_WIDE][CHECKS_WIDE]){
-	b[p->Lpad.x][p->Lpad.y+1] = 1;
-	b[p->Lpad.x][p->Lpad.y] = 1;
-	b[p->Lpad.x][p->Lpad.y-1] = 1;
-	b[p->Rpad.x][p->Rpad.y+1] = 1;
-	b[p->Rpad.x][p->Rpad.y] = 1;
-	b[p->Rpad.x][p->Rpad.y-1] = 1;
 }

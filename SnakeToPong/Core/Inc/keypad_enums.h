@@ -2,7 +2,8 @@
  * Keypad_enums.h
  *
  *  Created on: Oct 2, 2022
- *      Author: overk
+ *      Author: Jarrett Johns
+ *      Modified by: Christopher Ferguson
  */
 
 #ifndef INC_KEYPAD_ENUMS_H_

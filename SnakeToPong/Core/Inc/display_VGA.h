@@ -1,8 +1,8 @@
 /*
  * display_DOGS_102.h
  *
- *  Created on: Jul 26, 2022
- *      Author: carrolls
+ *  Created on: Oct 4, 2022
+ *      Author: Christopher Ferguson
  */
 
 #ifndef INC_DISPLAY_VGA
