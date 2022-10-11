@@ -11,6 +11,28 @@
 // Hand-written code that Cube won't help with
 /////////////////////////////////////////////////////////////////////////////
 
+// Wiring Diagram
+// PB5 - Resolution HIGH
+// PB4 - Resolution LOW
+// PC3 - SPI Data
+// PB10 - SPI Clock
+// PD9 - SPI nCS
+//
+// DE1 GPIO 0 :
+//		   TOP
+//     PB10     PD9
+//     PC3      PB4
+//     PB5      X
+//     X        X
+//     X        X
+//     X        X
+//		  ...
+//       Bottom
+
+
+
+// PINB6 - Resolution LOW
+
 extern  SPI_HandleTypeDef hspi2; //TUTORIAL ...
 // I wrote this line to borrow the hspi2 struct which was defined
 // for me by STM32CubeMX in MAIN.C. I have to, or the the calls
