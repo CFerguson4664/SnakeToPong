@@ -21,7 +21,7 @@ static uint8_t circular_shift(uint8_t color, uint8_t numShifts) {
 }
 
 void incremental_show_pong(Smc_queue *disp_q){
-	static const int checkerboard_squares = CHECKS_WIDE;
+	static const uint8_t checkerboard_squares = CHECKS_WIDE;
 
 	uint8_t xOffset = (xCap - checkerboard_squares) / 2;
 	uint8_t yOffset = (yCap - checkerboard_squares) / 2;

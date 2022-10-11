@@ -119,7 +119,6 @@ const XY_PT INITIAL_RPAD = {7,4}; //Right Paddle values
 
 
 extern volatile int32_t timer_isr_countdown; // Required to control timing
-const int VGA_board_size = CHECKS_WIDE; // Provided for extern
 
 void VGA_ram_health(uint16_t dummy_var, uint16_t pattern){
 	// Check if ram is valid
