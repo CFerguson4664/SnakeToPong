@@ -28,7 +28,7 @@
 // if with "typedef int32_t Q_data;" would be simpler and safer.
 
 typedef union {
-		int int_val;
+		int16_t int_val;
 		float float_val;
 		enum Moves button;
 		VGA_Pixel pixel;
