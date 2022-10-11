@@ -18,6 +18,9 @@ extern const uint8_t PADDLE_COLOR;
 extern const uint8_t BALL_COLOR;
 extern const uint8_t BLANK_COLOR;
 
+extern const uint8_t PADDLE_WIN_COLOR;
+extern const uint8_t PADDLE_LOSE_COLOR;
+
 typedef struct {
 	int16_t x;
 	int16_t y;
@@ -40,6 +43,8 @@ typedef struct {
 	XY_PT Lpad;
 	XY_PT Rpad;
 
+	// Detect if the game has ended
+	bool GameEnd;
 } pong_game;
 
 void pong_game_init(Smc_queue *disp_q);

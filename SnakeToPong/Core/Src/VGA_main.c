@@ -95,6 +95,10 @@ const uint8_t BLANK_COLOR = 0x00;
 const uint8_t BALL_COLOR = 0x3C;
 const uint8_t PADDLE_COLOR = 0x03;
 
+const uint8_t PADDLE_WIN_COLOR = 0x0C;
+const uint8_t PADDLE_LOSE_COLOR = 0x30;
+
+
 // Display Constants
 const uint8_t DISPLAY_WIDTH = 56;
 const uint8_t DISPLAY_HEIGHT = 32;
@@ -141,6 +145,9 @@ void VGA_main(void){
 	Smc_queue disp_q;
 	volatile uint16_t ram_dummy_2 = MEMORY_BARRIER_2;
 	smc_queue_init(&disp_q);
+
+	// Initialize the game
+	pong_game_init(&disp_q);
 
 	// Output object
 	// Initialize Screen Resolution

@@ -7,7 +7,7 @@
 #include "pong_gameplay.h"
 #include "keypad.h"
 
-static pong_game *p;
+static pong_game p;
 
 static void clear_board(Smc_queue *disp_q) {
 	for(uint8_t x = 0; x < (CHECKS_WIDE); x++) {
@@ -24,7 +24,7 @@ static void clear_board(Smc_queue *disp_q) {
 	}
 }
 
-static void redraw_paddle(XY_PT *pos, Smc_queue *disp_q) {
+static void redraw_paddle(XY_PT *pos, Smc_queue *disp_q, uint8_t paddle_color) {
 	// ASSERT -> We are drawing a paddle so it must be either in the first or last column
 	if(pos->x != 0 && pos-> x != ((CHECKS_WIDE) - 1)) {
 		return;
@@ -43,7 +43,7 @@ static void redraw_paddle(XY_PT *pos, Smc_queue *disp_q) {
 		pixel.point.y = i;
 
 		if(i >= (pos->y-1) && i <= (pos->y+1)) {
-			pixel.color = PADDLE_COLOR;
+			pixel.color = paddle_color;
 		}
 		else {
 			pixel.color = BLANK_COLOR;
@@ -233,7 +233,7 @@ static void resolve_paddle_changed_pixels(XY_PT *pos, int8_t moved, Smc_queue *d
 		}
 		default : {
 			// The move was very large, we will redraw the paddle column
-			redraw_paddle(pos, disp_q);
+			redraw_paddle(pos, disp_q, PADDLE_COLOR);
 			break;
 		}
 	}
@@ -241,85 +241,98 @@ static void resolve_paddle_changed_pixels(XY_PT *pos, int8_t moved, Smc_queue *d
 
 void pong_game_init(Smc_queue *disp_q){
 	//Set the initial position and velocity of the ball
-	p->ball.x = INITIAL_BALL.x;
-	p->ball.y = INITIAL_BALL.y;
+	p.ball.x = INITIAL_BALL.x;
+	p.ball.y = INITIAL_BALL.y;
 
-	p->balldir.x = INITIAL_BALLDIR.x;
-	p->balldir.y = INITIAL_BALLDIR.y;
+	p.balldir.x = INITIAL_BALLDIR.x;
+	p.balldir.y = INITIAL_BALLDIR.y;
 
 	//Places the {x,y} values into the left and right paddle objects.
-	p->Lpad.x = INITIAL_LPAD.x;
-	p->Lpad.y = INITIAL_LPAD.y;
+	p.Lpad.x = INITIAL_LPAD.x;
+	p.Lpad.y = INITIAL_LPAD.y;
 
-	p->Rpad.x = INITIAL_RPAD.x;
-	p->Rpad.y = INITIAL_RPAD.y;
+	p.Rpad.x = INITIAL_RPAD.x;
+	p.Rpad.y = INITIAL_RPAD.y;
+
+	p.GameEnd = false;
 
 	clear_board(disp_q);
-	redraw_paddle(&p->Rpad, disp_q);
-	redraw_paddle(&p->Lpad, disp_q);
+
+	redraw_paddle(&p.Rpad, disp_q, PADDLE_COLOR);
+	redraw_paddle(&p.Lpad, disp_q, PADDLE_COLOR);
 
 }
 
 void pong_periodic_play(Smc_queue *disp_q){
 
-	XY_PT tempBall = {p->ball.x, p->ball.y }; //Initialize and assign a temporary ball.
-	tempBall.x += p->balldir.x;//Move the temporary ball
-	tempBall.y += p->balldir.y;
+	if(p.GameEnd == false) {
+		// Handle removing the old ball
+		Q_data clear;
+		VGA_Pixel clear_old_ball;
+		clear_old_ball.point.x = p.ball.x;
+		clear_old_ball.point.y = p.ball.y;
+		clear_old_ball.color = BLANK_COLOR;;
+		clear.pixel = clear_old_ball;
+
+		disp_q->put(disp_q, &clear);
+	}
+
+
+	XY_PT tempBall = {p.ball.x, p.ball.y }; //Initialize and assign a temporary ball.
+	tempBall.x += p.balldir.x;//Move the temporary ball
+	tempBall.y += p.balldir.y;
 
 
 	//if statement to check if temp ball hit wall
 	if( tempBall.x < 0){ //if the temp ball hit left wall
-		p->balldir.x = 0; //Stops the ball from moving in the x and y direction.
-		p->balldir.y = 0;
+		p.balldir.x = 0; //Stops the ball from moving in the x and y direction.
+		p.balldir.y = 0;
 	}
 	else if(tempBall.x > ((CHECKS_WIDE) - 1)){ //if temp ball hits the right wall
-		p->balldir.x = 0; //Stops the ball from moving in the x and y direction.
-		p->balldir.y = 0;
+		p.balldir.x = 0; //Stops the ball from moving in the x and y direction.
+		p.balldir.y = 0;
 	}
 	else if(tempBall.y < 0){ //if we hit the top wall
-		p->balldir.y *= -1; //flip the y coordinate
+		p.balldir.y *= -1; //flip the y coordinate
 	}
 	else if(tempBall.y > ((CHECKS_WIDE) - 1)){ //if we hit the bottom wall
-		p->balldir.y *= -1; //flip the y coordinate
+		p.balldir.y *= -1; //flip the y coordinate
 	}
 
 
-	XY_PT tempBall2 = {p->ball.x, p->ball.y }; //Initialize and assign a temporary ball.
-	tempBall2.x += p->balldir.x;//Move the temporary ball
-	tempBall2.y += p->balldir.y;
+	XY_PT tempBall2 = {p.ball.x, p.ball.y }; //Initialize and assign a temporary ball.
+	tempBall2.x += p.balldir.x;//Move the temporary ball
+	tempBall2.y += p.balldir.y;
 
 	//if statement to check if the temp ball hit the paddle
-	if(tempBall2.x <= 0 && (p->Lpad.y + 1 == tempBall2.y || p->Lpad.y == tempBall2.y || p->Lpad.y-1 == tempBall2.y)){ //if temp ball hits left paddle
-		p->balldir.x *= -1; //reverse the x direction of the ball
+	if(tempBall2.x <= 0 && (p.Lpad.y + 1 == tempBall2.y || p.Lpad.y == tempBall2.y || p.Lpad.y-1 == tempBall2.y)){ //if temp ball hits left paddle
+		p.balldir.x *= -1; //reverse the x direction of the ball
 	}
-	else if(tempBall2.x >= 7 && (p->Rpad.y + 1 == tempBall2.y || p->Rpad.y == tempBall2.y || p->Rpad.y-1 == tempBall2.y)){ //if temp ball hits right paddle
-		p->balldir.x *= -1; //reverse x direction of the ball
+	else if(tempBall2.x >= 7 && (p.Rpad.y + 1 == tempBall2.y || p.Rpad.y == tempBall2.y || p.Rpad.y-1 == tempBall2.y)){ //if temp ball hits right paddle
+		p.balldir.x *= -1; //reverse x direction of the ball
 	}
 
-
-	// Handle removing the old ball
-	Q_data clear;
-	VGA_Pixel clear_old_ball;
-	clear_old_ball.point.x = p->ball.x;
-	clear_old_ball.point.y = p->ball.y;
-	clear_old_ball.color = BLANK_COLOR;;
-	clear.pixel = clear_old_ball;
-
-	disp_q->put(disp_q, &clear);
+	// If ball is still moving - no one has won
+	if(p.balldir.x == 0 || p.balldir.y == 0) {
+		p.GameEnd = true;
+	}
 
 	//Moves the real ball once we check to see if the move is valid.
-	p->ball.x += p->balldir.x;
-	p->ball.y += p->balldir.y;
+	p.ball.x += p.balldir.x;
+	p.ball.y += p.balldir.y;
 
-	// Handle drawing the new ball
-	Q_data draw;
-	VGA_Pixel disp_new_ball;
-	disp_new_ball.point.x = p->ball.x;
-	disp_new_ball.point.y = p->ball.y;
-	disp_new_ball.color = BALL_COLOR;
-	draw.pixel = disp_new_ball;
 
-	disp_q->put(disp_q, &draw);
+	if(p.GameEnd == false) {
+		// Handle drawing the new ball
+		Q_data draw;
+		VGA_Pixel disp_new_ball;
+		disp_new_ball.point.x = p.ball.x;
+		disp_new_ball.point.y = p.ball.y;
+		disp_new_ball.color = BALL_COLOR;
+		draw.pixel = disp_new_ball;
+
+		disp_q->put(disp_q, &draw);
+	}
 }
 
 void pacify_compiler(){
@@ -335,31 +348,32 @@ void paddle_update(Smc_queue* move_q, Smc_queue* disp_q){
 	uint8_t LPad_move = 0;
 
 
-	while(data_available) {
-		if(!data_available) return;
+	// For loop used to guarantee termination of the loop
+	for(uint8_t iter = 0; iter < 100; iter++) {
+		if(!data_available) break;
 		else{
 			switch(msg.button){
 			case Left_Up:
-				if(p->Lpad.y > 1){ // Make sure the left paddle has room to move up
-					p->Lpad.y -= 1; //move left paddle down
+				if(p.Lpad.y > 1){ // Make sure the left paddle has room to move up
+					p.Lpad.y -= 1; //move left paddle down
 					LPad_move -= 1;
 				}
 				break;
 			case Left_Down:
-				if(p->Lpad.y < ((CHECKS_WIDE) - 2)){ // Make sure the left paddle has room to move down
-					p->Lpad.y += 1; //move left paddle up
+				if(p.Lpad.y < ((CHECKS_WIDE) - 2)){ // Make sure the left paddle has room to move down
+					p.Lpad.y += 1; //move left paddle up
 					LPad_move += 1;
 				}
 				break;
 			case Right_Up:
-				if(p->Rpad.y > 1){ // Make sure the right paddle has room to move up
-					p->Rpad.y -= 1; //move right paddle up
+				if(p.Rpad.y > 1){ // Make sure the right paddle has room to move up
+					p.Rpad.y -= 1; //move right paddle up
 					RPad_move -= 1;
 				}
 				break;
 			case Right_Down:
-				if(p->Rpad.y < ((CHECKS_WIDE) - 2)){ // Make sure the right paddle has room to move down
-					p->Rpad.y += 1; //Move right paddle down
+				if(p.Rpad.y < ((CHECKS_WIDE) - 2)){ // Make sure the right paddle has room to move down
+					p.Rpad.y += 1; //Move right paddle down
 					RPad_move += 1;
 				}
 				break;
@@ -371,7 +385,21 @@ void paddle_update(Smc_queue* move_q, Smc_queue* disp_q){
 		data_available = move_q->get(move_q, &msg);
 	}
 
-	// Move the displayed paddle
-	resolve_paddle_changed_pixels(&p->Lpad, LPad_move, disp_q);
-	resolve_paddle_changed_pixels(&p->Rpad, RPad_move, disp_q);
+	// If the game is still going use the fast algorithm to draw the normal paddles
+	if(!p.GameEnd) {
+		// Move the displayed paddle
+		resolve_paddle_changed_pixels(&p.Lpad, LPad_move, disp_q);
+		resolve_paddle_changed_pixels(&p.Rpad, RPad_move, disp_q);
+	}
+	// If the game is over we will use the slower algorithm and change the color of the paddles
+	else {
+		if(p.ball.x == 0) { // If the right paddle won
+			redraw_paddle(&p.Lpad, disp_q, PADDLE_LOSE_COLOR);
+			redraw_paddle(&p.Rpad, disp_q, PADDLE_WIN_COLOR);
+		}
+		else { // If the left paddle won
+			redraw_paddle(&p.Lpad, disp_q, PADDLE_WIN_COLOR);
+			redraw_paddle(&p.Rpad, disp_q, PADDLE_LOSE_COLOR);
+		}
+	}
 }

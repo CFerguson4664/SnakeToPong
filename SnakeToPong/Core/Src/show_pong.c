@@ -30,7 +30,8 @@ void incremental_show_pong(Smc_queue *disp_q){
 	bool data_available;
 	data_available = disp_q->get(disp_q, &msg); //Test to see of there is input data
 
-	while(data_available) {
+	// For loop used to guarantee termination of the loop
+	for(uint8_t iter = 0; iter < 100; iter++) {
 		if(!data_available) return;
 		else{
 			// ASSERT - Pixel Coordinates must be between 0 and 7 inclusive, but 0 is checked by the fact it is an unsigned in
