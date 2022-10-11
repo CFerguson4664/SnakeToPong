@@ -117,28 +117,6 @@ void display_checkerboard_VGA(void){
 	}
 }
 
-
-void display_snake_board_VGA(int8_t board[CHECKS_WIDE][CHECKS_WIDE]){
-	const int checkerboard_squares = CHECKS_WIDE;
-	const int green = 0x0C;
-	const int black = 0x0C;
-
-	uint8_t xOffset = (xCap - checkerboard_squares) / 2;
-	uint8_t yOffset = (yCap - checkerboard_squares) / 2;
-
-	for(int8_t x = 0; x < checkerboard_squares; x++) {
-		for(int8_t y = 0; y < checkerboard_squares; y++) {
-			if(board[x][y] != 0) {
-				display_square_VGA((x + xOffset), (y + yOffset), green);
-			}
-			else {
-				display_square_VGA((x + xOffset), (y + yOffset), black);
-			}
-		}
-	}
-}
-
-
 void display_white_square_VGA(uint8_t l_to_r, uint8_t t_to_b){
 	display_square_VGA(l_to_r, t_to_b, WHITE);
 }

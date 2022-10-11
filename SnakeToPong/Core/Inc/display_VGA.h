@@ -32,7 +32,6 @@ void init_display_VGA(enum VGA_Scale scale);
 void display_blank_VGA(void);
 void display_color_VGA(uint8_t color);
 void display_checkerboard_VGA(void);
-void display_snake_board_VGA(int8_t sb[CHECKS_WIDE][CHECKS_WIDE]);
 void display_white_square_VGA(uint8_t l_to_r, uint8_t t_to_b);
 void display_dark_square_VGA(uint8_t l_to_r, uint8_t t_to_b);
 void display_square_VGA(uint8_t l_to_r, uint8_t t_to_b, uint8_t color);
